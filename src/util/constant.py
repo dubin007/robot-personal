@@ -8,3 +8,6 @@ sys.path.append(BASE_PATH)
 BASE_DIR = BASE_PATH + '/resource/'
 
 LOGGING_FORMAT = '%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s'
+REDIS_HOST = '127.0.0.1'
+
+STATE_NCOV_INFO = 'state_ncov_info'
