@@ -1,5 +1,5 @@
 import re
-from src.util.constant import ALL_AREA_KEY, AREA_TAIL, FIRST_NCOV_INFO
+from src.util.constant import ALL_AREA_KEY, AREA_TAIL, FIRST_NCOV_INFO, NO_NCOV_INFO
 from src.util.log import LogSupport
 from src.util.redis_config import load_last_info
 
@@ -38,11 +38,20 @@ def user_subscribe(conn, user, area, jieba):
     return succ_subscribe, failed_subscribe
 
 def get_ncvo_info_with_city(conn, citys):
+    """
+    根据传入的城市列表获取疫情信息
+    :param conn: redis连接
+    :param citys:
+    :return:
+    """
     last = load_last_info(conn)
     ncov = []
     for city in citys:
-        info = last[city]
-        ncov.append(FIRST_NCOV_INFO.format(info['city'], info['confirm'], info['dead'], info['heal']))
+        if city in last:
+            info = last[city]
+            ncov.append(FIRST_NCOV_INFO.format(info['city'], info['confirm'], info['dead'], info['heal']))
+        else:
+            ncov.append(NO_NCOV_INFO.format(city))
     return "；".join(ncov)
 
 
