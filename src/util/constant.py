@@ -16,3 +16,7 @@ ALL_AREA_KEY = 'all_area'
 AREA_TAIL = '(自治+)|省|市|县|区|镇'
 
 USER_SUBSCRIBE_KEY = 'user_subscribe'
+
+FIRST_NCOV_INFO = '{}目前有确诊病例{}例，死亡病例{}例，治愈病例{}例'
+
+INFO_TAIL = "该地区若数据有更新，会在第一时间通知您！您也可以通过发送 '取消+{地区名}'取消关注该地区，比如'取消湖北'，'取消全国'"

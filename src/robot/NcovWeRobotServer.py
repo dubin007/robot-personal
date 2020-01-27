@@ -1,8 +1,9 @@
 import itchat
 from itchat.content import *
 from src.robot.NcovWeRobotFunc import *
+from src.util.constant import INFO_TAIL
 from src.util.redis_config import connect_redis
-
+import jieba
 
 @itchat.msg_register([TEXT, MAP, CARD, NOTE, SHARING])
 def text_reply(msg):
@@ -19,6 +20,9 @@ def text_reply(msg):
         # msg.user.send('%s: %s' % (succ_text, failed_text))
         ls.logging.info('用户%s: %s %s' % (msg.user.UserName, succ_text, failed_text))
         itchat.send('%s %s' % (succ_text, failed_text), toUserName=msg.user.UserName)
+        itchat.send(get_ncvo_info_with_city(conn, succ), toUserName=msg.user.UserName)
+        itchat.send(INFO_TAIL, toUserName=msg.user.UserName)
+
 
 def init_jieba():
     all_area = set(conn.smembers(ALL_AREA_KEY))

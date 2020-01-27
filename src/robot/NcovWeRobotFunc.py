@@ -1,7 +1,7 @@
 import re
-import jieba
-from src.util.constant import ALL_AREA_KEY, AREA_TAIL
+from src.util.constant import ALL_AREA_KEY, AREA_TAIL, FIRST_NCOV_INFO
 from src.util.log import LogSupport
+from src.util.redis_config import load_last_info
 
 ls = LogSupport()
 def check_whether_register(text):
@@ -35,5 +35,14 @@ def user_subscribe(conn, user, area, jieba):
                 break
         if not flag:
             failed_subscribe.append(ar)
-
     return succ_subscribe, failed_subscribe
+
+def get_ncvo_info_with_city(conn, citys):
+    last = load_last_info(conn)
+    ncov = []
+    for city in citys:
+        info = last[city]
+        ncov.append(FIRST_NCOV_INFO.format(info['city'], info['confirm'], info['dead'], info['heal']))
+    return "；".join(ncov)
+
+

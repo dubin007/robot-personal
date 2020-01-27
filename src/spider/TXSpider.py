@@ -6,7 +6,7 @@ import json
 import pandas as pd
 import re
 
-from src.util.redis_config import connect_redis
+from src.util.redis_config import connect_redis, save_state_info, load_last_info
 
 class TXSpider():
     def __init__(self, debug=True):
@@ -18,7 +18,7 @@ class TXSpider():
     def main(self):
         data = self.get_raw_real_time_info()
         now_data = self.change_raw_data_format(data)
-        last_data = self.load_last_info()
+        last_data = load_last_info(self.re)
         update_city = self.parse_increase_info(now_data, last_data)
 
     def get_state_all_url(self):
@@ -95,7 +95,7 @@ class TXSpider():
         state_dict = self.get_state_all()
         data_dict.update(province_dict)
         data_dict.update(state_dict)
-        self.save_state_info(data_dict)
+        save_state_info(self.re, data_dict)
         self.log.logging.info("update data success")
         self.get_all_area(data_dict)
         return data_dict
@@ -143,18 +143,6 @@ class TXSpider():
 
     def check_whether_update(self, item):
         return item['n_confirm'] > 0 or item['n_suspect'] > 0 or item['n_dead'] or item['n_heal']
-
-    def save_state_info(self, data):
-        self.re.rpush(STATE_NCOV_INFO, json.dumps(data, ensure_ascii=False))
-
-    def load_last_info(self):
-        data_len = self.re.llen(STATE_NCOV_INFO)
-        if data_len == 0:
-            return None
-        elif data_len >= 10:
-            self.re.lpop(STATE_NCOV_INFO)
-        last = json.loads(self.re.lrange(STATE_NCOV_INFO, -1, -1)[0])
-        return last
 
 if __name__=='__main__':
     tx = TXSpider()
