@@ -20,6 +20,8 @@ class TXSpider():
             data = self.get_raw_real_time_info()
             now_data = self.change_raw_data_format(data)
             last_data = load_last_info(self.re)
+            if not last_data:
+                last_data = now_data
             update_city = self.parse_increase_info(now_data, last_data)
             if len(update_city) > 0:
                 self.re.set(SHOULD_UPDATE, 1)
@@ -47,7 +49,7 @@ class TXSpider():
         state_dict['area'] = '中国'
         state_dict['country'] = '中国'
         state_dict['city'] = '中国'
-        return {'中国': state_dict}
+        return {'中国': state_dict, '全国': state_dict}
 
 
 
@@ -105,7 +107,7 @@ class TXSpider():
         data_dict.update(province_dict)
         data_dict.update(state_dict)
         save_json_info(self.re, STATE_NCOV_INFO, data_dict)
-        self.log.logging.info("update data success")
+        self.log.logging.info("update data success---")
         self.get_all_area(data_dict)
         return data_dict
 
@@ -152,7 +154,6 @@ class TXSpider():
 
     def check_whether_update(self, item):
         return item['n_confirm'] > 0 or item['n_suspect'] > 0 or item['n_dead'] or item['n_heal']
-
 
 
 if __name__=='__main__':

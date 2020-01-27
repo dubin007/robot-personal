@@ -3,10 +3,11 @@ import time
 import itchat
 from itchat.content import *
 from src.robot.NcovWeRobotFunc import *
-from src.util.constant import INFO_TAIL, SHOULD_UPDATE, UPDATE_CITY, UPDATE_NCOV_INFO, SHORT_TIME_SPLIT
+from src.util.constant import INFO_TAIL, SHOULD_UPDATE, UPDATE_CITY, UPDATE_NCOV_INFO, SHORT_TIME_SPLIT, INFO_TAIL_ALL
 from src.util.redis_config import connect_redis
 import jieba
 import multiprocessing
+import threading
 from src.spider.SpiderServer import start_tx_spider
 
 @itchat.msg_register([TEXT, MAP, CARD, NOTE, SHARING])
@@ -25,9 +26,15 @@ def text_reply(msg):
         ls.logging.info('用户%s: %s %s' % (msg.user.UserName, succ_text, failed_text))
         itchat.send('%s %s' % (succ_text, failed_text), toUserName=msg.user.UserName)
         if len(succ) > 0:
+            time.sleep(0.1)
             itchat.send(get_ncvo_info_with_city(conn, succ), toUserName=msg.user.UserName)
             area = succ[0]
-            itchat.send(INFO_TAIL.format(area, area), toUserName=msg.user.UserName)
+            if area != '全国' or area != '中国':
+                time.sleep(0.1)
+                itchat.send(INFO_TAIL.format(area, area), toUserName=msg.user.UserName)
+            else:
+                time.sleep(0.1)
+                itchat.send(INFO_TAIL_ALL, toUserName=msg.user.UserName)
     elif check_whether_unregist(msg.text):
         succ, failed = user_unsubscribe_multi(conn, msg.user.UserName, msg.text, jieba)
         succ_text = ''
@@ -76,9 +83,11 @@ def do_ncov_update(conn, itchat, debug=True):
 
 def start_server():
     itchat.auto_login(False)
-    p1 = multiprocessing.Process(target=start_tx_spider)
+    ls.logging.info("begin to start tx spider")
+    p1 = threading.Thread(target=start_tx_spider)
     p1.start()
-    p2 = multiprocessing.Process(target=do_ncov_update, args=[conn, itchat, False])
+    ls.logging.info("begin to start ncov update")
+    p2 = threading.Thread(target=do_ncov_update, args=[conn, itchat, False])
     p2.start()
     itchat.send('Hello, 自动机器人又上线啦', toUserName='filehelper')
     itchat.run(True)
