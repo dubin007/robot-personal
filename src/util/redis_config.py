@@ -13,8 +13,8 @@ def get_pool():
     return pool
 
 
-def save_state_info(conn, data):
-    conn.rpush(STATE_NCOV_INFO, json.dumps(data, ensure_ascii=False))
+def save_json_info(conn, key, data):
+    conn.rpush(key, json.dumps(data, ensure_ascii=False))
 
 
 def load_last_info(conn):

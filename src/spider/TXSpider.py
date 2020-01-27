@@ -1,12 +1,11 @@
 import requests
 from urllib import parse
-from src.util.constant import STATE_NCOV_INFO, ALL_AREA_KEY, AREA_TAIL
+from src.util.constant import ALL_AREA_KEY, AREA_TAIL, SHOULD_UPDATE, STATE_NCOV_INFO, UPDATE_CITY
 from src.util.log import LogSupport
 import json
 import pandas as pd
 import re
-
-from src.util.redis_config import connect_redis, save_state_info, load_last_info
+from src.util.redis_config import connect_redis, save_json_info, load_last_info
 
 class TXSpider():
     def __init__(self, debug=True):
@@ -20,6 +19,11 @@ class TXSpider():
         now_data = self.change_raw_data_format(data)
         last_data = load_last_info(self.re)
         update_city = self.parse_increase_info(now_data, last_data)
+        if len(update_city) > 0:
+            self.re.set(SHOULD_UPDATE, 1)
+            save_json_info(self.re, UPDATE_CITY, update_city)
+        else:
+            self.re.set(SHOULD_UPDATE, 0)
 
     def get_state_all_url(self):
         url = 'https://view.inews.qq.com/g2/getOnsInfo?name=wuwei_ww_global_vars'
@@ -95,7 +99,7 @@ class TXSpider():
         state_dict = self.get_state_all()
         data_dict.update(province_dict)
         data_dict.update(state_dict)
-        save_state_info(self.re, data_dict)
+        save_json_info(self.re, STATE_NCOV_INFO, data_dict)
         self.log.logging.info("update data success")
         self.get_all_area(data_dict)
         return data_dict
