@@ -11,3 +11,8 @@ LOGGING_FORMAT = '%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(mess
 REDIS_HOST = '127.0.0.1'
 
 STATE_NCOV_INFO = 'state_ncov_info'
+ALL_AREA_KEY = 'all_area'
+
+AREA_TAIL = '(自治)|省|市|县|州|区|镇'
+
+USER_SUBSCRIBE_KEY = 'user_subscribe'
