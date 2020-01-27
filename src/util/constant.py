@@ -11,8 +11,13 @@ ALL_AREA_KEY = 'all_area'
 USER_SUBSCRIBE_KEY = 'user_subscribe'
 SHOULD_UPDATE = 'should_update'
 UPDATE_CITY = 'update_city'
-
+ORDER_KEY = 'order_area'
 #### Redis Key End
+
+### Reg Pattern Begin
+
+UN_REGIST_PATTERN = '^取关|取消(关注)?.+'
+UN_REGIST_PATTERN2 = '^取关|取消(关注)?'
 
 BASE_DIR = BASE_PATH + '/resource/'
 REDIS_HOST = '127.0.0.1'
@@ -27,7 +32,7 @@ UPDATE_NCOV_INFO = '{}有数据更新，新增确诊病例{}例，目前共有�
 
 NO_NCOV_INFO = '{}暂无疫情信息'
 
-INFO_TAIL = "该地区若数据后续有更新，会在第一时间通知您！您也可以通过发送 '取消+{地区名}'取消关注该地区，比如'取消湖北'，'取消全国'"
+INFO_TAIL = "该{}若数据后续有更新，会在第一时间通知您！您也可以通过发送 '取消+地区名'取消关注该地区，比如'取消{}'，'取消全国'"
 
 TIME_SPLIT = 60 * 10
 

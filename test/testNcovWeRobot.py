@@ -5,7 +5,7 @@ import itchat
 from src.robot.NcovWeRobotFunc import *
 from src.robot.NcovWeRobotServer import do_ncov_update
 from src.spider.TXSpider import TXSpider
-from src.util.constant import SHOULD_UPDATE, UPDATE_CITY
+from src.util.constant import SHOULD_UPDATE, UPDATE_CITY, UN_REGIST_PATTERN2
 from src.util.redis_config import connect_redis, save_json_info, save_json_info_as_key
 import jieba
 
@@ -18,6 +18,14 @@ class testNcovWeRobot(unittest.TestCase):
         assert check_whether_register("订阅湖北") == True
         assert check_whether_register("不订阅") == False
         assert check_whether_register("订阅") == False
+
+    def testCheckUnregist(self):
+        assert check_whether_unregist("取消湖北") == True
+        assert check_whether_unregist("取消") == False
+        assert check_whether_unregist("取关湖北") == True
+        assert re.subn(UN_REGIST_PATTERN2, "", "取消湖北")[0] == '湖北'
+        assert re.subn(UN_REGIST_PATTERN2, "", "取消关注湖北")[0] == '湖北'
+        assert re.subn(UN_REGIST_PATTERN2, "", "取关湖北")[0] == '湖北'
 
     def test_user_subscribe(self):
         conn = connect_redis()

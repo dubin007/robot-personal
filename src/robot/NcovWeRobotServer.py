@@ -26,8 +26,18 @@ def text_reply(msg):
         itchat.send('%s %s' % (succ_text, failed_text), toUserName=msg.user.UserName)
         if len(succ) > 0:
             itchat.send(get_ncvo_info_with_city(conn, succ), toUserName=msg.user.UserName)
-            itchat.send(INFO_TAIL, toUserName=msg.user.UserName)
-
+            area = succ[0]
+            itchat.send(INFO_TAIL.format(area, area), toUserName=msg.user.UserName)
+    elif check_whether_unregist(msg.text):
+        succ, failed = user_unsubscribe_multi(conn, msg.user.UserName, msg.text, jieba)
+        succ_text = ''
+        if len(succ) > 0:
+            succ_text = '成功取消{}的疫情信息订阅'.format("，".join(succ))
+        failed_text = ''
+        if len(failed) > 0:
+            failed_text ='取消{}的疫情信息订阅失败，您好像没有订阅该地区信息或者地区名称错误'.format("，".join(failed))
+        ls.logging.info('用户%s: %s %s' % (msg.user.UserName, succ_text, failed_text))
+        itchat.send('%s %s' % (succ_text, failed_text), toUserName=msg.user.UserName)
 
 def init_jieba():
     all_area = set(conn.smembers(ALL_AREA_KEY))
@@ -72,7 +82,6 @@ def start_server():
     p2.start()
     itchat.send('Hello, 自动机器人又上线啦', toUserName='filehelper')
     itchat.run(True)
-
 
 if __name__ == '__main__':
     conn = connect_redis()

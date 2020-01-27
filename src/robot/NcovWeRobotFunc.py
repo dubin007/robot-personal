@@ -1,5 +1,5 @@
 import re
-from src.util.constant import ALL_AREA_KEY, AREA_TAIL, FIRST_NCOV_INFO, NO_NCOV_INFO
+from src.util.constant import ALL_AREA_KEY, AREA_TAIL, FIRST_NCOV_INFO, NO_NCOV_INFO, ORDER_KEY, UN_REGIST_PATTERN
 from src.util.log import LogSupport
 from src.util.redis_config import load_last_info
 
@@ -31,12 +31,55 @@ def user_subscribe(conn, user, area, jieba):
             if ar + tail in all_area:
                 # 使该地区的键值唯一，以腾讯新闻中的名称为准，比如湖北省和湖北都使用湖北，而涪陵区和涪陵都使用涪陵区
                 conn.sadd(ar + tail, user)
+                conn.sadd(ORDER_KEY, ar + tail)
                 succ_subscribe.append(ar + tail)
                 flag =True
                 break
         if not flag:
             failed_subscribe.append(ar)
     return succ_subscribe, failed_subscribe
+
+def check_whether_unregist(text):
+    return re.match(UN_REGIST_PATTERN, text) != None
+
+def user_unsubscribe_multi(conn, user, area, jieba):
+    """
+    取消订阅
+    :param conn:
+    :param user:
+    :param area:
+    :param jieba:
+    :return:
+    """
+    all_order_area = conn.smembers(ORDER_KEY)
+    unsubscribe_list = []
+    unsubscribe_list_fail = []
+    # 全部取消订阅
+    if area.find("全部") != -1:
+        for area in all_order_area:
+            conn.srem(area, user)
+        unsubscribe_list.append("全部")
+        return unsubscribe_list, unsubscribe_list_fail
+    area = re.subn(UN_REGIST_PATTERN, '', area)[0]
+    area_list = jieba.cut(area)
+    for ar in area_list:
+        if ar in all_order_area:
+            ret = conn.srem(ar, user)
+            if ret > 0:
+                unsubscribe_list.append(ar)
+            else:
+                unsubscribe_list_fail.append(ar)
+        else:
+            # 比如用户订阅时使用的是湘西自治州，取消订阅时使用的湘西，则取消一个个查找
+            for order_area in all_order_area:
+                if order_area.startswith(ar):
+                    ret = conn.srem(order_area, user)
+                    if ret > 0:
+                        unsubscribe_list.append(order_area)
+                    else:
+                        unsubscribe_list_fail.append(order_area)
+                    break
+    return unsubscribe_list, unsubscribe_list_fail
 
 def get_ncvo_info_with_city(conn, citys):
     """
@@ -54,5 +97,3 @@ def get_ncvo_info_with_city(conn, citys):
         else:
             ncov.append(NO_NCOV_INFO.format(city))
     return "；".join(ncov)
-
-
