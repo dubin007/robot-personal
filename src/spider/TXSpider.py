@@ -1,18 +1,19 @@
 import requests
 from urllib import parse
-from src.util.constant import REDIS_HOST, STATE_NCOV_INFO, BASE_DIR, ALL_AREA_KEY, AREA_TAIL
+from src.util.constant import STATE_NCOV_INFO, ALL_AREA_KEY, AREA_TAIL
 from src.util.log import LogSupport
 import json
 import pandas as pd
-import redis
 import re
 
+from src.util.redis_config import connect_redis
+
 class TXSpider():
-    def __init__(self):
+    def __init__(self, debug=True):
         self.req = requests.Session()
         self.log = LogSupport()
-        self.re = self.connect_redis()
-        self.debug = True
+        self.re = connect_redis()
+        self.debug = debug
 
     def main(self):
         data = self.get_raw_real_time_info()
@@ -39,14 +40,7 @@ class TXSpider():
         state_dict['city'] = '中国'
         return {'中国': state_dict}
 
-    def connect_redis(self):
-        pool = self.get_pool()
-        conn = redis.Redis(connection_pool=pool)
-        return conn
 
-    def get_pool(self):
-        pool = redis.ConnectionPool(host=REDIS_HOST, port=6379, decode_responses=True)
-        return pool
 
     def get_tx_header(self):
         return {
@@ -124,7 +118,7 @@ class TXSpider():
         """
         all_area = data_dict.keys()
         for area in all_area:
-            short = re.subn(AREA_TAIL, '', area)
+            short = re.subn(AREA_TAIL, '', area)[0]
             self.re.sadd(ALL_AREA_KEY, short)
             self.re.sadd(ALL_AREA_KEY, area)
 
@@ -163,6 +157,7 @@ class TXSpider():
         return last
 
 if __name__=='__main__':
-    pass
+    tx = TXSpider()
+    tx.main()
 
 
