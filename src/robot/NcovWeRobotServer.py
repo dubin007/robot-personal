@@ -37,7 +37,7 @@ def init_jieba():
         jieba.add_word(words)
     return jieba
 
-def do_ncov_update(conn, debug=True):
+def do_ncov_update(conn, itchat, debug=True):
     while True:
         should_update = conn.get(SHOULD_UPDATE)
         if should_update == '1':
@@ -49,7 +49,7 @@ def do_ncov_update(conn, debug=True):
             update_city = json.loads(update_city)
             for city in update_city:
                 push_info = UPDATE_NCOV_INFO.format(city['city'], city['n_confirm'], city['confirm'], city['dead'], city['heal'])
-                subscribe_user = conn.lrange(city['city'], 0, -1)
+                subscribe_user = conn.smembers(city['city'])
                 for user in subscribe_user:
                     itchat.send(push_info, toUserName=user)
         if debug:

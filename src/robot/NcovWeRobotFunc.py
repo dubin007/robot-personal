@@ -29,7 +29,7 @@ def user_subscribe(conn, user, area, jieba):
         for tail in tails:
             if ar + tail in all_area:
                 # 使该地区的键值唯一，以腾讯新闻中的名称为准，比如湖北省和湖北都使用湖北，而涪陵区和涪陵都使用涪陵区
-                conn.rpush(ar + tail, user)
+                conn.sadd(ar + tail, user)
                 succ_subscribe.append(ar + tail)
                 flag =True
                 break

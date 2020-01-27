@@ -16,6 +16,8 @@ def get_pool():
 def save_json_info(conn, key, data):
     conn.rpush(key, json.dumps(data, ensure_ascii=False))
 
+def save_json_info_as_key(conn, key, data):
+    conn.set(key, json.dumps(data, ensure_ascii=False))
 
 def load_last_info(conn):
     data_len = conn.llen(STATE_NCOV_INFO)

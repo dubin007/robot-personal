@@ -5,7 +5,8 @@ from src.util.log import LogSupport
 import json
 import pandas as pd
 import re
-from src.util.redis_config import connect_redis, save_json_info, load_last_info
+from src.util.redis_config import connect_redis, save_json_info, load_last_info, save_json_info_as_key
+
 
 class TXSpider():
     def __init__(self, debug=True):
@@ -21,7 +22,7 @@ class TXSpider():
         update_city = self.parse_increase_info(now_data, last_data)
         if len(update_city) > 0:
             self.re.set(SHOULD_UPDATE, 1)
-            save_json_info(self.re, UPDATE_CITY, update_city)
+            save_json_info_as_key(self.re, UPDATE_CITY, update_city)
         else:
             self.re.set(SHOULD_UPDATE, 0)
 
