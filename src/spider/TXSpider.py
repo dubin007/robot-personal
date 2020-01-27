@@ -1,21 +1,43 @@
 import requests
 from urllib import parse
-
-from src.util.constant import REDIS_HOST, STATE_NCOV_INFO
+from src.util.constant import REDIS_HOST, STATE_NCOV_INFO, BASE_DIR, ALL_AREA_KEY, AREA_TAIL
 from src.util.log import LogSupport
 import json
 import pandas as pd
 import redis
+import re
 
 class TXSpider():
     def __init__(self):
         self.req = requests.Session()
         self.log = LogSupport()
         self.re = self.connect_redis()
+        self.debug = True
 
     def main(self):
         data = self.get_raw_real_time_info()
-        self.parse_increase_info(data)
+        now_data = self.change_raw_data_format(data)
+        last_data = self.load_last_info()
+        update_city = self.parse_increase_info(now_data, last_data)
+
+    def get_state_all_url(self):
+        url = 'https://view.inews.qq.com/g2/getOnsInfo?name=wuwei_ww_global_vars'
+        return url
+
+    def get_state_all(self):
+        res = self.req.get(url=self.get_state_all_url(), headers=self.get_tx_header())
+        if res.status_code != 200:
+            self.log.logging.error("获取全国数据失败")
+        data = json.loads(json.loads(res.content.decode("utf-8"))['data'])[0]
+        state_dict = {}
+        state_dict['confirm'] = data['confirmCount']
+        state_dict['dead'] = data['deadCount']
+        state_dict['heal'] = data['cure']
+        state_dict['suspect'] = data['suspectCount']
+        state_dict['area'] = '中国'
+        state_dict['country'] = '中国'
+        state_dict['city'] = '中国'
+        return {'中国': state_dict}
 
     def connect_redis(self):
         pool = self.get_pool()
@@ -57,8 +79,7 @@ class TXSpider():
         data = json.loads(content['data'])
         return data
 
-    def parse_increase_info(self, data):
-        last = self.load_last_info()
+    def change_raw_data_format(self, data):
         data_dict = {}
         for item in data:
             if item['city'] == '':
@@ -74,27 +95,56 @@ class TXSpider():
         data_province = data_province.groupby(by='area').sum().reset_index()
         data_province.sort_values(by='confirm', ascending=False, inplace=True)
         province_json = json.loads(data_province.to_json(orient='records', force_ascii=False))
-        province_dict = {x['area'] : x for x in province_json}
+        province_json = self.fill_unknow(province_json)
+        province_dict = {x['area']: x for x in province_json}
         # 合并数据并保存
+        state_dict = self.get_state_all()
         data_dict.update(province_dict)
+        data_dict.update(state_dict)
         self.save_state_info(data_dict)
+        self.log.logging.info("update data success")
+        self.get_all_area(data_dict)
+        return data_dict
 
+    def fill_unknow(self, data):
+        for item in data:
+            if 'city' not in item or item['city'] == '':
+                if 'area' not in item or item['area'] == '':
+                    item['city'] = item['country']
+                    item['area'] = item['country']
+                else:
+                    item['city'] = item['area']
+        return data
+
+    def get_all_area(self, data_dict):
+        """
+        保存所有地区的名称，供分词用
+        :param data_dict:
+        :return:
+        """
+        all_area = data_dict.keys()
+        for area in all_area:
+            short = re.subn(AREA_TAIL, '', area)
+            self.re.sadd(ALL_AREA_KEY, short)
+            self.re.sadd(ALL_AREA_KEY, area)
+
+    def parse_increase_info(self, now_data, last_data):
         # 计算有更新的城市/省份/国家
         update_city = []
-        for index, value in data_dict.items():
-            if index in last:
-                last_value = last[index]
-                data_dict[index]['n_confirm'] = value['confirm'] - last_value['confirm']
-                data_dict[index]['n_suspect'] = value['suspect'] - last_value['suspect']
-                data_dict[index]['n_dead'] = value['dead'] - last_value['dead']
-                data_dict[index]['n_heal'] = value['heal'] - last_value['heal']
+        for index, value in now_data.items():
+            if index in last_data:
+                last_value = last_data[index]
+                now_data[index]['n_confirm'] = value['confirm'] - last_value['confirm']
+                now_data[index]['n_suspect'] = value['suspect'] - last_value['suspect']
+                now_data[index]['n_dead'] = value['dead'] - last_value['dead']
+                now_data[index]['n_heal'] = value['heal'] - last_value['heal']
             else:
-                data_dict[index]['n_confirm'] = value['confirm']
-                data_dict[index]['n_suspect'] = value['suspect']
-                data_dict[index]['n_dead'] = value['dead']
-                data_dict[index]['n_heal'] = value['heal']
-            if self.check_whether_update(data_dict[index]):
-                update_city.append(data_dict[index])
+                now_data[index]['n_confirm'] = value['confirm']
+                now_data[index]['n_suspect'] = value['suspect']
+                now_data[index]['n_dead'] = value['dead']
+                now_data[index]['n_heal'] = value['heal']
+            if self.check_whether_update(now_data[index]):
+                update_city.append(now_data[index])
         return update_city
 
     def check_whether_update(self, item):
