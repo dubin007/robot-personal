@@ -3,9 +3,11 @@ import time
 import itchat
 from itchat.content import *
 from src.robot.NcovWeRobotFunc import *
-from src.util.constant import INFO_TAIL, SHOULD_UPDATE, UPDATE_CITY, UPDATE_NCOV_INFO
+from src.util.constant import INFO_TAIL, SHOULD_UPDATE, UPDATE_CITY, UPDATE_NCOV_INFO, SHORT_TIME_SPLIT
 from src.util.redis_config import connect_redis
 import jieba
+import multiprocessing
+from src.spider.SpiderServer import start_tx_spider
 
 @itchat.msg_register([TEXT, MAP, CARD, NOTE, SHARING])
 def text_reply(msg):
@@ -31,35 +33,43 @@ def init_jieba():
     all_area = set(conn.smembers(ALL_AREA_KEY))
     if len(all_area) == 0:
         ls.logging.error("尚无地区信息")
-        raise BaseException
 
     for words in all_area:
         jieba.add_word(words)
     return jieba
 
 def do_ncov_update(conn, itchat, debug=True):
-    while True:
-        should_update = conn.get(SHOULD_UPDATE)
-        if should_update == '1':
-            update_city = conn.get(UPDATE_CITY)
-            conn.set(SHOULD_UPDATE, 0)
-            if not update_city:
-                ls.logging.warning("-No update city info")
-                continue
-            update_city = json.loads(update_city)
-            for city in update_city:
-                push_info = UPDATE_NCOV_INFO.format(city['city'], city['n_confirm'], city['confirm'], city['dead'], city['heal'])
-                subscribe_user = conn.smembers(city['city'])
-                for user in subscribe_user:
-                    itchat.send(push_info, toUserName=user)
-        if debug:
-            break
-        # 暂停十分钟
-        time.sleep(60 * 10)
+    ls.logging.info("thread do ncov update info start success-----")
+    try:
+        while True:
+            should_update = conn.get(SHOULD_UPDATE)
+            if should_update == '1':
+                update_city = conn.get(UPDATE_CITY)
+                conn.set(SHOULD_UPDATE, 0)
+                if not update_city:
+                    ls.logging.warning("-No update city info")
+                    continue
+                update_city = json.loads(update_city)
+                for city in update_city:
+                    push_info = UPDATE_NCOV_INFO.format(city['city'], city['n_confirm'], city['confirm'], city['dead'], city['heal'])
+                    subscribe_user = conn.smembers(city['city'])
+                    for user in subscribe_user:
+                        itchat.send(push_info, toUserName=user)
+            if debug:
+                break
+            # 暂停几分钟
+            time.sleep(SHORT_TIME_SPLIT)
+    except BaseException as e:
+        ls.logging.error("Error in check ncov update-----")
+        ls.logging.exception(e)
 
 
 def start_server():
-    itchat.auto_login(True)
+    itchat.auto_login(False)
+    p1 = multiprocessing.Process(target=start_tx_spider)
+    p1.start()
+    p2 = multiprocessing.Process(target=do_ncov_update, args=[conn, itchat, False])
+    p2.start()
     itchat.send('Hello, 自动机器人又上线啦', toUserName='filehelper')
     itchat.run(True)
 

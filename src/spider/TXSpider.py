@@ -1,12 +1,12 @@
 import requests
 from urllib import parse
-from src.util.constant import ALL_AREA_KEY, AREA_TAIL, SHOULD_UPDATE, STATE_NCOV_INFO, UPDATE_CITY
+from src.util.constant import ALL_AREA_KEY, AREA_TAIL, SHOULD_UPDATE, STATE_NCOV_INFO, UPDATE_CITY, TIME_SPLIT
 from src.util.log import LogSupport
 import json
 import pandas as pd
 import re
 from src.util.redis_config import connect_redis, save_json_info, load_last_info, save_json_info_as_key
-
+import time
 
 class TXSpider():
     def __init__(self, debug=True):
@@ -16,15 +16,19 @@ class TXSpider():
         self.debug = debug
 
     def main(self):
-        data = self.get_raw_real_time_info()
-        now_data = self.change_raw_data_format(data)
-        last_data = load_last_info(self.re)
-        update_city = self.parse_increase_info(now_data, last_data)
-        if len(update_city) > 0:
-            self.re.set(SHOULD_UPDATE, 1)
-            save_json_info_as_key(self.re, UPDATE_CITY, update_city)
-        else:
-            self.re.set(SHOULD_UPDATE, 0)
+        try:
+            data = self.get_raw_real_time_info()
+            now_data = self.change_raw_data_format(data)
+            last_data = load_last_info(self.re)
+            update_city = self.parse_increase_info(now_data, last_data)
+            if len(update_city) > 0:
+                self.re.set(SHOULD_UPDATE, 1)
+                save_json_info_as_key(self.re, UPDATE_CITY, update_city)
+                self.log.logging.info("set update city {}".format(json.dumps(update_city)))
+            else:
+                self.re.set(SHOULD_UPDATE, 0)
+        except BaseException as e:
+            self.log.logging.exception(e)
 
     def get_state_all_url(self):
         url = 'https://view.inews.qq.com/g2/getOnsInfo?name=wuwei_ww_global_vars'
@@ -148,6 +152,8 @@ class TXSpider():
 
     def check_whether_update(self, item):
         return item['n_confirm'] > 0 or item['n_suspect'] > 0 or item['n_dead'] or item['n_heal']
+
+
 
 if __name__=='__main__':
     tx = TXSpider()
