@@ -66,9 +66,11 @@ class testNcovWeRobot(unittest.TestCase):
         area1 = '重庆市'
         area2 = '重庆'
         area3 = '某某自治区'
+        area4 = '杭州'
         assert re.subn(AREA_TAIL, '', area1)[0] == '重庆'
         assert re.subn(AREA_TAIL, '', area2)[0] == '重庆'
         assert re.subn(AREA_TAIL, '', area3)[0] == '某某'
+        assert re.subn(AREA_TAIL, '', area4)[0] == '杭州'
 
     def test_fill_unknown(self):
         data = [{'confirm': 2823, 'dead': 81, 'heal': 55, 'suspect': 5794, 'country': '中国'}]
