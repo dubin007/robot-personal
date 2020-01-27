@@ -19,6 +19,7 @@ def user_subscribe(conn, user, area, jieba):
     # 去掉订阅两字
     area = area.replace("订阅", '')
     area_list = jieba.cut(area)
+    area_list = list(filter(lambda x: len(x) == 1, area_list))
     succ_subscribe = []
     failed_subscribe = []
     tails = ['省', '市', '区', '县','州','自治区', '自治州', '']
