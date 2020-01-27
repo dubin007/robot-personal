@@ -1,14 +1,20 @@
 import json
 import time
 import itchat
+import os
+import sys
+curPath = os.path.abspath(os.path.dirname(__file__))
+rootPath = os.path.split(curPath)[0]
+BASE_PATH = os.path.split(rootPath)[0]
+sys.path.append(BASE_PATH)
 from itchat.content import *
 from src.robot.NcovWeRobotFunc import *
 from src.util.constant import INFO_TAIL, SHOULD_UPDATE, UPDATE_CITY, UPDATE_NCOV_INFO, SHORT_TIME_SPLIT, INFO_TAIL_ALL
 from src.util.redis_config import connect_redis
 import jieba
-import multiprocessing
 import threading
 from src.spider.SpiderServer import start_tx_spider
+
 
 @itchat.msg_register([TEXT, MAP, CARD, NOTE, SHARING])
 def text_reply(msg):
