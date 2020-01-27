@@ -35,7 +35,7 @@ def text_reply(msg):
             time.sleep(0.1)
             itchat.send(get_ncvo_info_with_city(conn, succ), toUserName=msg.user.UserName)
             area = succ[0]
-            if area != '全国' or area != '中国':
+            if area != '全国' and area != '中国':
                 time.sleep(0.1)
                 itchat.send(INFO_TAIL.format(area, area), toUserName=msg.user.UserName)
             else:
