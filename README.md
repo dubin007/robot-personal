@@ -8,9 +8,12 @@
 
 ### 1.爬虫模块
 
-- 1.定时从腾讯新闻获取全国疫情数据（URL: https://news.qq.com/zt2020/page/feiyan.htm）
+- 1.定时从腾讯新闻获取全国疫情数据（地址:[https://news.qq.com/zt2020/page/feiyan.htm](https://news.qq.com/zt2020/page/feiyan.htm)）
 - 2.按城市/省份对数据进行存储并对比数据是否更新
 - 3.推送更新的数据到微信机器人
+- 4.获取全国寻人启事
+- 5.获取辟谣信息
+- 6.根据用户设定的关键字/城市推送信息
 
 ### 2.微信机器人模块
 
@@ -24,3 +27,9 @@
 
 - 数据库：Redis
 - 部署：Docker
+
+## 部分运行截图
+
+![](./resource/image/robot1.jpg)
+![](./resource/image/robot2.jpg)
+![](./resource/image/robot3.jpg)
