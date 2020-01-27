@@ -19,8 +19,13 @@ ORDER_KEY = 'order_area'
 UN_REGIST_PATTERN = '^取关|取消(关注)?.+'
 UN_REGIST_PATTERN2 = '^取关|取消(关注)?'
 
+### REG PAttern End
+
 BASE_DIR = BASE_PATH + '/resource/'
+# for localhost redis
 REDIS_HOST = '127.0.0.1'
+## for docker redis
+REDIS_HOST_DOCKER = 'redis'
 
 LOGGING_FORMAT = '%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s'
 

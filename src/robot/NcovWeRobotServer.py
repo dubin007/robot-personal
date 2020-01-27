@@ -88,7 +88,7 @@ def do_ncov_update(conn, itchat, debug=True):
 
 
 def start_server():
-    itchat.auto_login(False)
+    itchat.auto_login(False, enableCmdQR=2)
     ls.logging.info("begin to start tx spider")
     p1 = threading.Thread(target=start_tx_spider)
     p1.start()
