@@ -16,6 +16,10 @@ class TXSpider():
         self.debug = debug
 
     def main(self):
+        """
+        主函数
+        :return:
+        """
         try:
             data = self.get_raw_real_time_info()
             now_data = self.change_raw_data_format(data)
@@ -42,6 +46,10 @@ class TXSpider():
         return url
 
     def get_state_all(self):
+        """
+        获取全国数据
+        :return:
+        """
         res = self.req.get(url=self.get_state_all_url(), headers=self.get_tx_header())
         if res.status_code != 200:
             self.log.logging.error("获取全国数据失败")
@@ -90,6 +98,11 @@ class TXSpider():
         return data
 
     def change_raw_data_format(self, data):
+        """
+        将原始的json_list形式的数据转为dict, 填充缺失值并按省份、国家统计数据
+        :param data:
+        :return:
+        """
         data_dict = {}
         for item in data:
             if item['city'] == '':

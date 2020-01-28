@@ -6,12 +6,17 @@ BASE_PATH = os.path.split(rootPath)[0]
 sys.path.append(BASE_PATH)
 
 #### Redis Key Begin
+# 当前所有疫情数据，类型：list
 STATE_NCOV_INFO = 'state_ncov_info'
+# 所有有疫情的城市集合
 ALL_AREA_KEY = 'all_area'
-USER_SUBSCRIBE_KEY = 'user_subscribe'
+# 标记为，标记数据是有更新
 SHOULD_UPDATE = 'should_update'
+# 需要推送更新的数据
 UPDATE_CITY = 'update_city'
+# 当前已有订阅的城市集合，类型set
 ORDER_KEY = 'order_area'
+# 每个城市单独保存一个key做集合，订阅的用户在集合中
 #### Redis Key End
 
 ### Reg Pattern Begin

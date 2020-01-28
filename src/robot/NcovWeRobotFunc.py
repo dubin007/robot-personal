@@ -111,3 +111,7 @@ def get_ncvo_info_with_city(conn, citys):
         else:
             ncov.append(NO_NCOV_INFO.format(city))
     return "；".join(ncov)
+
+def restore_we_friend(conn, itchat):
+
+    pass
