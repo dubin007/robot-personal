@@ -2,4 +2,8 @@
 *.log
 *.pkl
 *.pyc
-QR.png
+*.png
+*.jpg
+*.gif
+!resource/image/
+chi_sim.traineddata
