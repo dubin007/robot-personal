@@ -1,5 +1,6 @@
 import sys
 import os
+import random
 curPath = os.path.abspath(os.path.dirname(__file__))
 rootPath = os.path.split(curPath)[0]
 BASE_PATH = os.path.split(rootPath)[0]
@@ -56,4 +57,4 @@ TIME_SPLIT = 60 * 3
 
 SHORT_TIME_SPLIT = 60 * 5
 
-SEND_SPLIT = 1
+SEND_SPLIT = random.random() * 10
