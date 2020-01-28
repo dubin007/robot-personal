@@ -6,7 +6,7 @@ import sys
 
 from src.ocr.OCR import Image2Title
 from src.ocr.TextSummary import get_text_summary
-from src.util.util import move_image, check_image, check_identify
+from src.util.util import move_image, check_image, check_identify, remove_image
 
 curPath = os.path.abspath(os.path.dirname(__file__))
 rootPath = os.path.split(curPath)[0]
@@ -129,9 +129,9 @@ def text_reply(msg):
         return
     if check_image(msg.fileName):
         msg.download(msg.fileName)
-        new_file = os.path.join(BASE_DIR, 'download_image/') + msg.fileName
-        move_image(msg.fileName, new_file)
-        text_list = ocr(new_file)
+        # new_file = os.path.join(BASE_DIR, 'download_image/') + msg.fileName
+        text_list = ocr(msg.fileName)
+        remove_image(msg.fileName)
         identify_news(text_list, itchat, msg['FromUserName'])
 
 def init_jieba():

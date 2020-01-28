@@ -4,6 +4,9 @@ import re
 def move_image(img_path, new_img_path):
     os.rename(img_path, new_img_path)
 
+def remove_image(image_path):
+    os.remove(image_path)
+
 def check_image(title):
     return title.find('.png') != -1
 
