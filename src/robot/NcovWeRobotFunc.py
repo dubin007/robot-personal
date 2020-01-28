@@ -14,6 +14,7 @@ def user_subscribe(conn, user, area, jieba):
     :param conn: redis 连接
     :param user: 用户名
     :param area: 发送订阅的文字，如订阅湖北省
+    :param jieba: jieba分词的对象，从外部传入是为了加载额外的词库
     :return:
     """
     all_area = set(conn.smembers(ALL_AREA_KEY))

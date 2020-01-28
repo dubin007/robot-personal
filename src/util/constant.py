@@ -48,3 +48,5 @@ INFO_TAIL_ALL = "若全国的数据有更新，我会在第一时间通知您！
 TIME_SPLIT = 60 * 3
 
 SHORT_TIME_SPLIT = 60 * 5
+
+SEND_SPLIT = 1

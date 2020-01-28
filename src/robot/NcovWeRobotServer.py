@@ -11,7 +11,7 @@ sys.path.append(BASE_PATH)
 from itchat.content import *
 from src.robot.NcovWeRobotFunc import *
 from src.util.constant import INFO_TAIL, SHOULD_UPDATE, UPDATE_CITY, UPDATE_NCOV_INFO, SHORT_TIME_SPLIT, INFO_TAIL_ALL, \
-    UPDATE_NCOV_INFO_ALL
+    UPDATE_NCOV_INFO_ALL, SEND_SPLIT
 from src.util.redis_config import connect_redis
 import jieba
 import threading
@@ -33,14 +33,14 @@ def text_reply(msg):
         ls.logging.info('用户%s: %s %s' % (msg.user.UserName, succ_text, failed_text))
         itchat.send('%s %s' % (succ_text, failed_text), toUserName=msg.user.UserName)
         if len(succ) > 0:
-            time.sleep(0.1)
+            time.sleep(SEND_SPLIT)
             itchat.send(get_ncvo_info_with_city(conn, succ), toUserName=msg.user.UserName)
             area = succ[0]
             if area != '全国' and area != '中国':
-                time.sleep(0.1)
+                time.sleep(SEND_SPLIT)
                 itchat.send(INFO_TAIL.format(area, area), toUserName=msg.user.UserName)
             else:
-                time.sleep(0.1)
+                time.sleep(SEND_SPLIT)
                 itchat.send(INFO_TAIL_ALL, toUserName=msg.user.UserName)
     elif check_whether_unregist(msg.text):
         succ, failed = user_unsubscribe_multi(conn, msg.user.UserName, msg.text, jieba)
@@ -92,7 +92,7 @@ def do_ncov_update(conn, itchat, debug=True):
                             ls.logging.info("info:{},user: {}".format(push_info[:20], user))
                             itchat.send(push_info, toUserName=user)
                             # 发送太快容易出事
-                            time.sleep(0.5)
+                            time.sleep(SEND_SPLIT)
                         except BaseException as e:
                             ls.logging.error("send failed，{}".format(user))
                             ls.logging.exception(e)
