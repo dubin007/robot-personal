@@ -3,3 +3,5 @@ pandas
 itchat
 redis
 jieba
+snownlp
+pytesseract
