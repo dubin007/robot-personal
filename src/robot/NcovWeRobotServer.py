@@ -107,7 +107,7 @@ def do_ncov_update(conn, itchat, debug=True):
 
 def start_server():
     # 在不同的终端上，需要调整CMDQR的值
-    itchat.auto_login(False, enableCmdQR=2)
+    itchat.auto_login(True, enableCmdQR=2)
     ls.logging.info("begin to start tx spider")
     p1 = threading.Thread(target=start_tx_spider)
     p1.start()
