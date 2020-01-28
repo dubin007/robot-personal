@@ -19,16 +19,20 @@ class TXSpider():
         try:
             data = self.get_raw_real_time_info()
             now_data = self.change_raw_data_format(data)
+            # 加载上一次最新的数据
             last_data = load_last_info(self.re)
             if not last_data:
                 last_data = now_data
             update_city = self.parse_increase_info(now_data, last_data)
+            # 如果数据有更新，则保存新数据和更新的数据
             if len(update_city) > 0:
                 self.re.set(SHOULD_UPDATE, 1)
+                save_json_info(self.re, STATE_NCOV_INFO, now_data)
                 save_json_info_as_key(self.re, UPDATE_CITY, update_city)
                 self.log.logging.info("set update city {}".format(json.dumps(update_city)))
             else:
-                self.re.set(SHOULD_UPDATE, 0)
+                # self.re.set(SHOULD_UPDATE, 0)
+                self.log.logging.info("no update city")
         except BaseException as e:
             self.log.logging.exception(e)
 
@@ -46,10 +50,10 @@ class TXSpider():
         state_dict['dead'] = data['deadCount']
         state_dict['heal'] = data['cure']
         state_dict['suspect'] = data['suspectCount']
-        state_dict['area'] = '中国'
-        state_dict['country'] = '中国'
-        state_dict['city'] = '中国'
-        return {'中国': state_dict, '全国': state_dict}
+        state_dict['area'] = '全国'
+        state_dict['country'] = '全国'
+        state_dict['city'] = '全国'
+        return {'全国': state_dict}
 
 
 
@@ -106,7 +110,7 @@ class TXSpider():
         state_dict = self.get_state_all()
         data_dict.update(province_dict)
         data_dict.update(state_dict)
-        save_json_info(self.re, STATE_NCOV_INFO, data_dict)
+
         self.log.logging.info("update data success---")
         self.get_all_area(data_dict)
         return data_dict
@@ -153,7 +157,7 @@ class TXSpider():
         return update_city
 
     def check_whether_update(self, item):
-        return item['n_confirm'] > 0 or item['n_suspect'] > 0 or item['n_dead'] or item['n_heal']
+        return item['n_confirm'] > 0 or item['n_suspect'] > 0 or item['n_dead'] > 0 or item['n_heal'] > 0
 
 
 if __name__=='__main__':

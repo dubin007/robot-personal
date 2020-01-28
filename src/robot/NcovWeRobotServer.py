@@ -3,13 +3,15 @@ import time
 import itchat
 import os
 import sys
+
 curPath = os.path.abspath(os.path.dirname(__file__))
 rootPath = os.path.split(curPath)[0]
 BASE_PATH = os.path.split(rootPath)[0]
 sys.path.append(BASE_PATH)
 from itchat.content import *
 from src.robot.NcovWeRobotFunc import *
-from src.util.constant import INFO_TAIL, SHOULD_UPDATE, UPDATE_CITY, UPDATE_NCOV_INFO, SHORT_TIME_SPLIT, INFO_TAIL_ALL
+from src.util.constant import INFO_TAIL, SHOULD_UPDATE, UPDATE_CITY, UPDATE_NCOV_INFO, SHORT_TIME_SPLIT, INFO_TAIL_ALL, \
+    UPDATE_NCOV_INFO_ALL
 from src.util.redis_config import connect_redis
 import jieba
 import threading
@@ -48,9 +50,10 @@ def text_reply(msg):
             succ_text = '成功取消{}的疫情信息订阅'.format("，".join(succ))
         failed_text = ''
         if len(failed) > 0:
-            failed_text ='取消{}的疫情信息订阅失败，您好像没有订阅该地区信息或者地区名称错误'.format("，".join(failed))
+            failed_text = '取消{}的疫情信息订阅失败，您好像没有订阅该地区信息或者地区名称错误'.format("，".join(failed))
         ls.logging.info('用户%s: %s %s' % (msg.user.UserName, succ_text, failed_text))
         itchat.send('%s %s' % (succ_text, failed_text), toUserName=msg.user.UserName)
+
 
 def init_jieba():
     all_area = set(conn.smembers(ALL_AREA_KEY))
@@ -60,6 +63,7 @@ def init_jieba():
     for words in all_area:
         jieba.add_word(words)
     return jieba
+
 
 def do_ncov_update(conn, itchat, debug=True):
     ls.logging.info("thread do ncov update info start success-----")
@@ -74,10 +78,18 @@ def do_ncov_update(conn, itchat, debug=True):
                     continue
                 update_city = json.loads(update_city)
                 for city in update_city:
-                    push_info = UPDATE_NCOV_INFO.format(city['city'], city['n_confirm'], city['confirm'], city['dead'], city['heal'])
+                    if city['city'] == '全国':
+                        push_info = UPDATE_NCOV_INFO_ALL.format(city['city'], city['n_confirm'], city['n_suspect'],
+                                                                city['confirm'], city['suspect'], city['dead'],
+                                                                city['heal'])
+                    else:
+                        push_info = UPDATE_NCOV_INFO.format(city['city'], city['n_confirm'], city['confirm'],
+                                                            city['dead'], city['heal'])
                     subscribe_user = conn.smembers(city['city'])
                     for user in subscribe_user:
                         itchat.send(push_info, toUserName=user)
+                        # 发送太快容易出事
+                        time.sleep(0.05)
             if debug:
                 break
             # 暂停几分钟
@@ -98,8 +110,8 @@ def start_server():
     itchat.send('Hello, 自动机器人又上线啦', toUserName='filehelper')
     itchat.run(True)
 
+
 if __name__ == '__main__':
     conn = connect_redis()
     jieba = init_jieba()
     start_server()
-

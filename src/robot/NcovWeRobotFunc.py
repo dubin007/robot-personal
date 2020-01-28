@@ -29,17 +29,22 @@ def user_subscribe(conn, user, area, jieba):
 
     for ar in area_list:
         ar = re.subn(AREA_TAIL, '', ar)[0]
-        flag = False
-        for tail in tails:
-            if ar + tail in all_area:
-                # 使该地区的键值唯一，以腾讯新闻中的名称为准，比如湖北省和湖北都使用湖北，而涪陵区和涪陵都使用涪陵区
-                conn.sadd(ar + tail, user)
-                conn.sadd(ORDER_KEY, ar + tail)
-                succ_subscribe.append(ar + tail)
-                flag =True
-                break
-        if not flag:
-            failed_subscribe.append(ar)
+        if ar == '中国' or ar == '全国':
+            conn.sadd('全国', user)
+            conn.sadd(ORDER_KEY, '全国')
+            succ_subscribe.append('全国')
+        else:
+            flag = False
+            for tail in tails:
+                if ar + tail in all_area:
+                    # 使该地区的键值唯一，以腾讯新闻中的名称为准，比如湖北省和湖北都使用湖北，而涪陵区和涪陵都使用涪陵区
+                    conn.sadd(ar + tail, user)
+                    conn.sadd(ORDER_KEY, ar + tail)
+                    succ_subscribe.append(ar + tail)
+                    flag =True
+                    break
+            if not flag:
+                failed_subscribe.append(ar)
     return succ_subscribe, failed_subscribe
 
 def check_whether_unregist(text):
