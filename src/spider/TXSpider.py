@@ -22,6 +22,7 @@ class TXSpider():
             # 加载上一次最新的数据
             last_data = load_last_info(self.re)
             if not last_data:
+                save_json_info(self.re, STATE_NCOV_INFO, now_data)
                 last_data = now_data
             update_city = self.parse_increase_info(now_data, last_data)
             # 如果数据有更新，则保存新数据和更新的数据

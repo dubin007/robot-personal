@@ -17,7 +17,6 @@ import jieba
 import threading
 from src.spider.SpiderServer import start_tx_spider
 
-
 @itchat.msg_register([TEXT, MAP, CARD, NOTE, SHARING])
 def text_reply(msg):
     if msg['FromUserName'] == itchat.originInstance.storageClass.userName:
@@ -86,13 +85,14 @@ def do_ncov_update(conn, itchat, debug=True):
                         push_info = UPDATE_NCOV_INFO.format(city['city'], city['n_confirm'], city['confirm'],
                                                             city['dead'], city['heal'])
                     subscribe_user = conn.smembers(city['city'])
+
                     ls.logging.info("begin to send info...")
                     for user in subscribe_user:
                         try:
                             ls.logging.info("info:{},user: {}".format(push_info[:20], user))
                             itchat.send(push_info, toUserName=user)
                             # 发送太快容易出事
-                            time.sleep(0.05)
+                            time.sleep(0.5)
                         except BaseException as e:
                             ls.logging.error("send failed，{}".format(user))
                             ls.logging.exception(e)
@@ -106,7 +106,7 @@ def do_ncov_update(conn, itchat, debug=True):
 
 
 def start_server():
-    itchat.auto_login(False, enableCmdQR=2)
+    itchat.auto_login(False)
     ls.logging.info("begin to start tx spider")
     p1 = threading.Thread(target=start_tx_spider)
     p1.start()
@@ -116,8 +116,8 @@ def start_server():
     itchat.send('Hello, 自动机器人又上线啦', toUserName='filehelper')
     itchat.run(True)
 
+conn = connect_redis()
+jieba = init_jieba()
 
 if __name__ == '__main__':
-    conn = connect_redis()
-    jieba = init_jieba()
     start_server()
