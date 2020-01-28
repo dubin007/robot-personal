@@ -25,7 +25,6 @@ RUN apt-get -q -y --force-yes install tesseract-ocr-eng tesseract-ocr-ara tesser
 RUN apt-get -q -y --force-yes install gcc
 RUN mkdir -p /usr/local/share/tessdata/
 RUN cp -R /usr/share/tesseract-ocr/tessdata/* /usr/local/share/tessdata/
-COPY Songti.ttc /usr/share/fonts
 COPY chi_sim.traineddata /usr/local/share/tessdata/
 
 COPY requirements.txt /ncov_robot
