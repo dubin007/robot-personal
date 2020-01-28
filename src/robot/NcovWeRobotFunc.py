@@ -113,5 +113,17 @@ def get_ncvo_info_with_city(conn, citys):
     return "；".join(ncov)
 
 def restore_we_friend(conn, itchat):
+    """
+    添加好友，但是微信已经禁止了网页版添加好友的功能
+    :param conn:
+    :param itchat:
+    :return:
+    """
+    all_order_area = conn.smembers(ORDER_KEY)
+    all_users = set()
+    for order_area in all_order_area:
+        users = itchat.smembers(order_area)
+        all_users.union(users)
 
-    pass
+    for user in all_users:
+        itchat.add_friend(userName=user)
