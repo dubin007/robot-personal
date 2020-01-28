@@ -1,7 +1,9 @@
 import json
 import re
+import time
+
 import requests
-from src.util.constant import USER_FOCUS_GROUP
+from src.util.constant import USER_FOCUS_GROUP, SEND_SPLIT
 from urllib import parse
 import os
 from src.util.log import LogSupport
@@ -79,9 +81,10 @@ def identify_news(text_list, itchat, group_name):
                     # 发送消息
                     ls.logging.info("谣言：{}，来源:{}".format(text, source['oriurl']))
                     itchat.send(reply, group_name)
+                    time.sleep(SEND_SPLIT)
                     return
-    ls.logging.info("非谣言：{}".format(text_list[0]))
+        ls.logging.info("非谣言：{}".format(text))
 
 def parse_identify_res(text, source):
-    reply_text = '这个{}是{}，真实情况是: {}。你可以点这里看详情'.format(text[0:15], source['result'], source['abstract'], source['oriurl'])
+    reply_text = '这个{}是{}，真实情况是: {}。不信的话你可以点这里看详情:{}'.format(text[0:15], source['result'], source['abstract'], source['oriurl'])
     return reply_text
