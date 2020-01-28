@@ -4,14 +4,13 @@ import itchat
 import os
 import sys
 
-from src.ocr.OCR import Image2Title
-from src.ocr.TextSummary import get_text_summary
-from src.util.util import move_image, check_image, check_identify, remove_image
-
 curPath = os.path.abspath(os.path.dirname(__file__))
 rootPath = os.path.split(curPath)[0]
 BASE_PATH = os.path.split(rootPath)[0]
 sys.path.append(BASE_PATH)
+from src.ocr.OCR import Image2Title
+from src.ocr.TextSummary import get_text_summary
+from src.util.util import check_image, check_identify, remove_image
 from itchat.content import *
 from src.robot.NcovWeRobotFunc import *
 from src.util.constant import INFO_TAIL, INFO_TAIL_ALL, SEND_SPLIT, FOCUS_TAIL, BASE_DIR
@@ -131,6 +130,7 @@ def text_reply(msg):
         msg.download(msg.fileName)
         # new_file = os.path.join(BASE_DIR, 'download_image/') + msg.fileName
         text_list = ocr(msg.fileName)
+        text_list = list(filter(lambda x: len(x) > 10, text_list))
         remove_image(msg.fileName)
         identify_news(text_list, itchat, msg['FromUserName'])
 
@@ -145,8 +145,8 @@ def init_jieba():
 
 def start_server():
     # 在不同的终端上，需要调整CMDQR的值
-    # itchat.auto_login(True, enableCmdQR=2)
-    itchat.auto_login(False)
+    itchat.auto_login(True, enableCmdQR=2)
+    # itchat.auto_login(False)
     ls.logging.info("begin to start tx spider")
     p1 = threading.Thread(target=start_tx_spider)
     p1.start()
@@ -156,7 +156,7 @@ def start_server():
     itchat.send('Hello, 自动机器人又上线啦', toUserName='filehelper')
     itchat.run(True)
 
-ocr = Image2Title()
+ocr = Image2Title(topK=5)
 conn = connect_redis()
 jieba = init_jieba()
 
