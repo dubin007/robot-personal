@@ -3,13 +3,18 @@ import time
 import itchat
 import os
 import sys
+
+from src.ocr.OCR import Image2Title
+from src.ocr.TextSummary import get_text_summary
+from src.util.util import move_image, check_image, check_identify
+
 curPath = os.path.abspath(os.path.dirname(__file__))
 rootPath = os.path.split(curPath)[0]
 BASE_PATH = os.path.split(rootPath)[0]
 sys.path.append(BASE_PATH)
 from itchat.content import *
 from src.robot.NcovWeRobotFunc import *
-from src.util.constant import INFO_TAIL, INFO_TAIL_ALL, SEND_SPLIT, FOCUS_TAIL
+from src.util.constant import INFO_TAIL, INFO_TAIL_ALL, SEND_SPLIT, FOCUS_TAIL, BASE_DIR
 from src.util.redis_config import connect_redis
 from src.robot.NcovGroupRobot import *
 
@@ -78,29 +83,56 @@ def text_reply(msg):
         ls.logging.info('用户%s: %s %s' % (msg.user.UserName, succ_text, failed_text))
         itchat.send('%s %s' % (succ_text, failed_text), toUserName='filehelper')
 
+@itchat.msg_register([TEXT, NOTE], isGroupChat=True)
+def text_reply(msg):
+    if msg['FromUserName'] == itchat.originInstance.storageClass.userName and msg['ToUserName'] != 'filehelper':
+        return
+    if len(msg.text) < 50:
+        return
+    focus_group = conn.smembers(USER_FOCUS_GROUP)
+    if msg['FromUserName'] not in focus_group:
+        return
+    # 带有辟谣等字眼的信息直接返回
+    if check_identify(msg.text):
+        return
+    # 获取文字摘要
+    text_list = get_text_summary(msg.text, topK=2)
+    # 鉴别
+    identify_news(text_list, itchat, msg['FromUserName'])
 
-@itchat.msg_register([TEXT, NOTE, PICTURE, SHARING, RECORDING, ATTACHMENT, VIDEO], isGroupChat=True)
+@itchat.msg_register([SHARING], isGroupChat=True)
+def text_reply(msg):
+    if msg['FromUserName'] == itchat.originInstance.storageClass.userName and msg['ToUserName'] != 'filehelper':
+        return
+    if check_identify(msg.text):
+        return
+    # 鉴别
+    identify_news([msg.text], itchat, msg['FromUserName'])
+
+@itchat.msg_register([SHARING])
+def text_reply(msg):
+    if msg['FromUserName'] == itchat.originInstance.storageClass.userName and msg['ToUserName'] != 'filehelper':
+        return
+    if check_identify(msg.text):
+        return
+    # 获取文字摘要
+    text_list = get_text_summary(msg.text, topK=2)
+    # 鉴别
+    identify_news(text_list, itchat, msg['FromUserName'])
+
+@itchat.msg_register([PICTURE, RECORDING, ATTACHMENT, VIDEO], isGroupChat=True)
 def text_reply(msg):
     if msg['FromUserName'] == itchat.originInstance.storageClass.userName and msg['ToUserName'] != 'filehelper':
         return
     focus_group = conn.smembers(USER_FOCUS_GROUP)
     if msg['FromUserName'] not in focus_group:
         return
-
-    print(msg.text)
-    print(msg)
-    taget_chatroom = itchat.search_chatrooms('【TEXT】')
-    chatroom_name = taget_chatroom[0]['UserName']
-    msg.download(msg.fileName)
-    print(taget_chatroom[0])
-    print(chatroom_name)
-
-    if chatroom_name in msg['FromUserName']:
-        if str(msg['Text']) in ['start']:
-            itchat.send('测试成功', msg['FromUserName'])
-    if chatroom_name in msg['ToUserName']:
-        if str(msg['Text']) in ['start']:
-            itchat.send('测试成功', msg['ToUserName'])
+    if check_image(msg.fileName):
+        msg.download(msg.fileName)
+        new_file = os.path.join(BASE_DIR, 'download_image/') + msg.fileName
+        move_image(msg.fileName, new_file)
+        text_list = ocr(new_file)
+        identify_news(text_list, itchat, msg['FromUserName'])
 
 def init_jieba():
     all_area = set(conn.smembers(ALL_AREA_KEY))
@@ -113,7 +145,8 @@ def init_jieba():
 
 def start_server():
     # 在不同的终端上，需要调整CMDQR的值
-    itchat.auto_login(True, enableCmdQR=2)
+    # itchat.auto_login(True, enableCmdQR=2)
+    itchat.auto_login(False)
     ls.logging.info("begin to start tx spider")
     p1 = threading.Thread(target=start_tx_spider)
     p1.start()
@@ -123,6 +156,7 @@ def start_server():
     itchat.send('Hello, 自动机器人又上线啦', toUserName='filehelper')
     itchat.run(True)
 
+ocr = Image2Title()
 conn = connect_redis()
 jieba = init_jieba()
 

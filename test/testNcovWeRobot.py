@@ -1,16 +1,16 @@
 import threading
-import time
 import unittest
 
 import itchat
 
+from src.util.util import move_image
 from src.robot.NcovWeRobotFunc import *
 from src.robot.NcovWeRobotServer import do_ncov_update, start_server
 from src.spider.TXSpider import TXSpider
-from src.util.constant import SHOULD_UPDATE, UPDATE_CITY, UN_REGIST_PATTERN2
-from src.util.redis_config import connect_redis, save_json_info, save_json_info_as_key
+from src.util.constant import SHOULD_UPDATE, UPDATE_CITY, UN_REGIST_PATTERN2, BASE_DIR
+from src.util.redis_config import connect_redis, save_json_info_as_key
 import jieba
-import multiprocessing
+import os
 
 class testNcovWeRobot(unittest.TestCase):
 
@@ -147,4 +147,7 @@ class testNcovWeRobot(unittest.TestCase):
             self.sp.re.set(SHOULD_UPDATE, 1)
             save_json_info_as_key(self.sp.re, UPDATE_CITY, self.update_city)
             time.sleep(10)
+
+    def test_move_image(self):
+        move_image('../200128-081500.png', os.path.join(BASE_DIR, 'download_image/') + '200128-081500.png')
 
