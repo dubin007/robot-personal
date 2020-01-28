@@ -6,7 +6,6 @@ import json
 import pandas as pd
 import re
 from src.util.redis_config import connect_redis, save_json_info, load_last_info, save_json_info_as_key
-import time
 
 class TXSpider():
     def __init__(self, debug=True):

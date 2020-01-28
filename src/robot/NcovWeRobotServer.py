@@ -3,21 +3,21 @@ import time
 import itchat
 import os
 import sys
-
 curPath = os.path.abspath(os.path.dirname(__file__))
 rootPath = os.path.split(curPath)[0]
 BASE_PATH = os.path.split(rootPath)[0]
 sys.path.append(BASE_PATH)
 from itchat.content import *
 from src.robot.NcovWeRobotFunc import *
-from src.util.constant import INFO_TAIL, SHOULD_UPDATE, UPDATE_CITY, UPDATE_NCOV_INFO, SHORT_TIME_SPLIT, INFO_TAIL_ALL, \
-    UPDATE_NCOV_INFO_ALL, SEND_SPLIT
+from src.util.constant import INFO_TAIL, INFO_TAIL_ALL, SEND_SPLIT, FOCUS_TAIL
 from src.util.redis_config import connect_redis
+from src.robot.NcovGroupRobot import *
+
 import jieba
 import threading
 from src.spider.SpiderServer import start_tx_spider
 
-@itchat.msg_register([TEXT, MAP, CARD, NOTE, SHARING])
+@itchat.msg_register([TEXT])
 def text_reply(msg):
     if msg['FromUserName'] == itchat.originInstance.storageClass.userName and msg['ToUserName'] != 'filehelper':
         return
@@ -53,6 +53,54 @@ def text_reply(msg):
         ls.logging.info('用户%s: %s %s' % (msg.user.UserName, succ_text, failed_text))
         itchat.send('%s %s' % (succ_text, failed_text), toUserName=msg.user.UserName)
 
+    elif msg['ToUserName'] == 'filehelper' and check_whether_identify(msg.text):
+        succ, failed = add_identify_group(conn, itchat, msg.text)
+        succ_text =''
+        failed_text = ''
+        if len(succ) > 0:
+            succ_text = '成功关注{}，会自动鉴别该群的疫情谣言'.format("，".join(succ))
+        else:
+            failed_text = '关注{}失败，请检查该群名称是否正确'.format("，".join(failed))
+        ls.logging.info('用户%s: %s %s' % (msg.user.UserName, succ_text, failed_text))
+        itchat.send('%s %s' % (succ_text, failed_text), toUserName='filehelper')
+        if len(succ) > 0:
+            time.sleep(SEND_SPLIT)
+            itchat.send(FOCUS_TAIL, toUserName='filehelper')
+
+    elif msg['ToUserName'] == 'filehelper' and check_whether_unidentify(msg.text):
+        succ, failed = cancel_identify_group(conn, itchat, msg.text)
+        succ_text = ''
+        failed_text = ''
+        if len(succ) > 0:
+            succ_text = '取消鉴别{}成功'.format("，".join(succ))
+        else:
+            failed_text = '取消鉴别{}失败，请检查该群名称是否正确'.format("，".join(failed))
+        ls.logging.info('用户%s: %s %s' % (msg.user.UserName, succ_text, failed_text))
+        itchat.send('%s %s' % (succ_text, failed_text), toUserName='filehelper')
+
+
+@itchat.msg_register([TEXT, NOTE, PICTURE, SHARING, RECORDING, ATTACHMENT, VIDEO], isGroupChat=True)
+def text_reply(msg):
+    if msg['FromUserName'] == itchat.originInstance.storageClass.userName and msg['ToUserName'] != 'filehelper':
+        return
+    focus_group = conn.smembers(USER_FOCUS_GROUP)
+    if msg['FromUserName'] not in focus_group:
+        return
+
+    print(msg.text)
+    print(msg)
+    taget_chatroom = itchat.search_chatrooms('【TEXT】')
+    chatroom_name = taget_chatroom[0]['UserName']
+    msg.download(msg.fileName)
+    print(taget_chatroom[0])
+    print(chatroom_name)
+
+    if chatroom_name in msg['FromUserName']:
+        if str(msg['Text']) in ['start']:
+            itchat.send('测试成功', msg['FromUserName'])
+    if chatroom_name in msg['ToUserName']:
+        if str(msg['Text']) in ['start']:
+            itchat.send('测试成功', msg['ToUserName'])
 
 def init_jieba():
     all_area = set(conn.smembers(ALL_AREA_KEY))
@@ -62,48 +110,6 @@ def init_jieba():
     for words in all_area:
         jieba.add_word(words)
     return jieba
-
-
-def do_ncov_update(conn, itchat, debug=True):
-    ls.logging.info("thread do ncov update info start success-----")
-    try:
-        while True:
-            should_update = conn.get(SHOULD_UPDATE)
-            if should_update == '1':
-                update_city = conn.get(UPDATE_CITY)
-                conn.set(SHOULD_UPDATE, 0)
-                if not update_city:
-                    ls.logging.warning("-No update city info")
-                    continue
-                update_city = json.loads(update_city)
-                for city in update_city:
-                    if city['city'] == '全国' or city['city'] == '中国':
-                        push_info = UPDATE_NCOV_INFO_ALL.format(city['city'], city['n_confirm'], city['n_suspect'],
-                                                                city['confirm'], city['suspect'], city['dead'],
-                                                                city['heal'])
-                    else:
-                        push_info = UPDATE_NCOV_INFO.format(city['city'], city['n_confirm'], city['confirm'],
-                                                            city['dead'], city['heal'])
-                    subscribe_user = conn.smembers(city['city'])
-
-                    ls.logging.info("begin to send info...")
-                    for user in subscribe_user:
-                        try:
-                            ls.logging.info("info:{},user: {}".format(push_info[:20], user))
-                            itchat.send(push_info, toUserName=user)
-                            # 发送太快容易出事
-                            time.sleep(SEND_SPLIT)
-                        except BaseException as e:
-                            ls.logging.error("send failed，{}".format(user))
-                            ls.logging.exception(e)
-            if debug:
-                break
-            # 暂停几分钟
-            time.sleep(SHORT_TIME_SPLIT)
-    except BaseException as e:
-        ls.logging.error("Error in check ncov update-----")
-        ls.logging.exception(e)
-
 
 def start_server():
     # 在不同的终端上，需要调整CMDQR的值

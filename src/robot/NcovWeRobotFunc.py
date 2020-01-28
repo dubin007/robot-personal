@@ -1,8 +1,11 @@
 import re
+import time
+
 from src.util.constant import ALL_AREA_KEY, AREA_TAIL, FIRST_NCOV_INFO, NO_NCOV_INFO, ORDER_KEY, UN_REGIST_PATTERN, \
-    UN_REGIST_PATTERN2
+    UN_REGIST_PATTERN2, SHOULD_UPDATE, UPDATE_CITY, SEND_SPLIT, UPDATE_NCOV_INFO, UPDATE_NCOV_INFO_ALL, SHORT_TIME_SPLIT
 from src.util.log import LogSupport
 from src.util.redis_config import load_last_info
+import json
 
 ls = LogSupport()
 def check_whether_register(text):
@@ -128,3 +131,44 @@ def restore_we_friend(conn, itchat):
 
     for user in all_users:
         itchat.add_friend(userName=user)
+
+def do_ncov_update(conn, itchat, debug=True):
+    ls.logging.info("thread do ncov update info start success-----")
+    try:
+        while True:
+            should_update = conn.get(SHOULD_UPDATE)
+            if should_update == '1':
+                update_city = conn.get(UPDATE_CITY)
+                conn.set(SHOULD_UPDATE, 0)
+                if not update_city:
+                    ls.logging.warning("-No update city info")
+                    continue
+                update_city = json.loads(update_city)
+                for city in update_city:
+                    if city['city'] == '全国' or city['city'] == '中国':
+                        push_info = UPDATE_NCOV_INFO_ALL.format(city['city'], city['n_confirm'], city['n_suspect'],
+                                                                city['confirm'], city['suspect'], city['dead'],
+                                                                city['heal'])
+                    else:
+                        push_info = UPDATE_NCOV_INFO.format(city['city'], city['n_confirm'], city['confirm'],
+                                                            city['dead'], city['heal'])
+                    subscribe_user = conn.smembers(city['city'])
+
+                    ls.logging.info("begin to send info...")
+                    for user in subscribe_user:
+                        try:
+                            ls.logging.info("info:{},user: {}".format(push_info[:20], user))
+                            itchat.send(push_info, toUserName=user)
+                            # 发送太快容易出事
+                            time.sleep(SEND_SPLIT)
+                        except BaseException as e:
+                            ls.logging.error("send failed，{}".format(user))
+                            ls.logging.exception(e)
+            if debug:
+                break
+            # 暂停几分钟
+            time.sleep(SHORT_TIME_SPLIT)
+    except BaseException as e:
+        ls.logging.error("Error in check ncov update-----")
+        ls.logging.exception(e)
+
