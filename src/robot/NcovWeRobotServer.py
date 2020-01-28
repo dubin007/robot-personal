@@ -78,7 +78,7 @@ def do_ncov_update(conn, itchat, debug=True):
                     continue
                 update_city = json.loads(update_city)
                 for city in update_city:
-                    if city['city'] == '全国':
+                    if city['city'] == '全国' or city['city'] == '中国':
                         push_info = UPDATE_NCOV_INFO_ALL.format(city['city'], city['n_confirm'], city['n_suspect'],
                                                                 city['confirm'], city['suspect'], city['dead'],
                                                                 city['heal'])
@@ -86,10 +86,16 @@ def do_ncov_update(conn, itchat, debug=True):
                         push_info = UPDATE_NCOV_INFO.format(city['city'], city['n_confirm'], city['confirm'],
                                                             city['dead'], city['heal'])
                     subscribe_user = conn.smembers(city['city'])
+                    ls.logging.info("begin to send info...")
                     for user in subscribe_user:
-                        itchat.send(push_info, toUserName=user)
-                        # 发送太快容易出事
-                        time.sleep(0.05)
+                        try:
+                            ls.logging.info("info:{},user: {}".format(push_info[:20], user))
+                            itchat.send(push_info, toUserName=user)
+                            # 发送太快容易出事
+                            time.sleep(0.05)
+                        except BaseException as e:
+                            ls.logging.error("send failed，{}".format(user))
+                            ls.logging.exception(e)
             if debug:
                 break
             # 暂停几分钟
