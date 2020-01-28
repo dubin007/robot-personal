@@ -51,12 +51,14 @@ class testNcovWeRobot(unittest.TestCase):
 
         last = self.sp.change_raw_data_format(data1)
         now = self.sp.change_raw_data_format(data2)
+        last['全国']['confirm'] = 2714
         update_city = self.sp.parse_increase_info(now, last)
         print(update_city)
-        assert len(update_city) == 3
+        assert len(update_city) == 4
         assert update_city[0]['city'] == '武汉'
         assert update_city[1]['area'] == '加拿大'
         assert update_city[2]['area'] == '湖北'
+        assert update_city[3]['area'] == '全国'
 
 
     def test_get_state_all(self):
