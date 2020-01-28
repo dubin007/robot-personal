@@ -19,7 +19,7 @@ from src.spider.SpiderServer import start_tx_spider
 
 @itchat.msg_register([TEXT, MAP, CARD, NOTE, SHARING])
 def text_reply(msg):
-    if msg['FromUserName'] == itchat.originInstance.storageClass.userName:
+    if msg['FromUserName'] == itchat.originInstance.storageClass.userName and msg['ToUserName'] != 'filehelper':
         return
     if check_whether_register(msg.text):
         succ, failed = user_subscribe(conn, msg.user.UserName, msg.text, jieba)
@@ -106,7 +106,8 @@ def do_ncov_update(conn, itchat, debug=True):
 
 
 def start_server():
-    itchat.auto_login(False)
+    # 在不同的终端上，需要调整CMDQR的值
+    itchat.auto_login(False, enableCmdQR=2)
     ls.logging.info("begin to start tx spider")
     p1 = threading.Thread(target=start_tx_spider)
     p1.start()

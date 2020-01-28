@@ -42,4 +42,4 @@ INFO_TAIL = "若{}等地区数据有更新，我会在第一时间通知您！�
 INFO_TAIL_ALL = "若全国的数据有更新，我会在第一时间通知您！您也可以通过发送'取消全国'取消对全国数据的关注"
 TIME_SPLIT = 60 * 3
 
-SHORT_TIME_SPLIT = 60 * 3
+SHORT_TIME_SPLIT = 60 * 5
