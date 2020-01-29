@@ -163,7 +163,7 @@ def do_ncov_update(conn, itchat, debug=True):
             if debug:
                 break
             # 暂停几分钟
-            time.sleep(SHORT_TIME_SPLIT)
+            time.sleep(get_random_long_time())
     except BaseException as e:
         ls.logging.error("Error in check ncov update-----")
         ls.logging.exception(e)
@@ -199,4 +199,7 @@ def get_random_split():
 
 def get_random_split_short():
     return random.random() * 3
+
+def get_random_long_time():
+    return random.random() * 60 * 60
 
