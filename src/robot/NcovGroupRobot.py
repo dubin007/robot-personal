@@ -39,8 +39,9 @@ def cancel_identify_group(conn, itchat, group):
     failed = []
     if len(target_chatroom) > 0:
         chatroom_name = target_chatroom[0]['UserName']
-        conn.srem(USER_FOCUS_GROUP, group_name)
-        succ.append(chatroom_name)
+        conn.srem(USER_FOCUS_GROUP, chatroom_name)
+        conn.srem(USER_FOCUS_GROUP_NAME, group_name)
+        succ.append(group_name)
     else:
         failed.append(group_name)
     return succ, failed
