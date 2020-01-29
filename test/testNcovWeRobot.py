@@ -12,6 +12,7 @@ from src.util.redis_config import connect_redis, save_json_info_as_key
 import jieba
 import os
 
+
 class testNcovWeRobot(unittest.TestCase):
 
     def setUp(self) -> None:
@@ -53,42 +54,43 @@ class testNcovWeRobot(unittest.TestCase):
             {"country": "法国", "area": "", "city": "", "confirm": 3, "suspect": 0, "dead": 0, "heal": 0},
             {"country": "中国", "area": "重庆", "city": "重庆", "confirm": 3, "suspect": 0, "dead": 0, "heal": 0}]
 
-        self.update_city = [{"country": "中国", "area": "辽宁", "city": "沈阳", "confirm": 8, "suspect": 0, "dead": 0, "heal": 0,
-                 "n_confirm": 1, "n_suspect": 0, "n_dead": 0, "n_heal": 0},
-                {"area": "天津", "confirm": 24, "suspect": 0, "dead": 0, "heal": 0, "city": "天津", "n_confirm": 1,
-                 "n_suspect": 0, "n_dead": 0, "n_heal": 0},
-                {"country": "中国", "area": "辽宁", "city": "丹东", "confirm": 5, "suspect": 0, "dead": 0, "heal": 0,
-                 "n_confirm": 1, "n_suspect": 0, "n_dead": 0, "n_heal": 0},
-                {"country": "中国", "area": "上海", "city": "外地来沪", "confirm": 33, "suspect": 0, "dead": 0, "heal": 0,
-                 "n_confirm": 33, "n_suspect": 0, "n_dead": 0, "n_heal": 0},
-                {"country": "中国", "area": "上海", "city": "浦东", "confirm": 9, "suspect": 0, "dead": 0, "heal": 0,
-                 "n_confirm": 9, "n_suspect": 0, "n_dead": 0, "n_heal": 0},
-                {"country": "中国", "area": "上海", "city": "长宁", "confirm": 5, "suspect": 0, "dead": 0, "heal": 0,
-                 "n_confirm": 5, "n_suspect": 0, "n_dead": 0, "n_heal": 0},
-                {"country": "中国", "area": "上海", "city": "静安", "confirm": 5, "suspect": 0, "dead": 0, "heal": 0,
-                 "n_confirm": 5, "n_suspect": 0, "n_dead": 0, "n_heal": 0},
-                {"country": "中国", "area": "上海", "city": "徐汇", "confirm": 3, "suspect": 0, "dead": 0, "heal": 0,
-                 "n_confirm": 3, "n_suspect": 0, "n_dead": 0, "n_heal": 0},
-                {"country": "中国", "area": "上海", "city": "虹口", "confirm": 2, "suspect": 0, "dead": 0, "heal": 0,
-                 "n_confirm": 2, "n_suspect": 0, "n_dead": 0, "n_heal": 0},
-                {"country": "中国", "area": "上海", "city": "闵行", "confirm": 2, "suspect": 0, "dead": 0, "heal": 0,
-                 "n_confirm": 2, "n_suspect": 0, "n_dead": 0, "n_heal": 0},
-                {"country": "中国", "area": "上海", "city": "青浦", "confirm": 2, "suspect": 0, "dead": 0, "heal": 0,
-                 "n_confirm": 2, "n_suspect": 0, "n_dead": 0, "n_heal": 0},
-                {"country": "中国", "area": "上海", "city": "黄埔", "confirm": 2, "suspect": 0, "dead": 0, "heal": 0,
-                 "n_confirm": 2, "n_suspect": 0, "n_dead": 0, "n_heal": 0},
-                {"country": "中国", "area": "上海", "city": "宝山", "confirm": 1, "suspect": 0, "dead": 0, "heal": 0,
-                 "n_confirm": 1, "n_suspect": 0, "n_dead": 0, "n_heal": 0},
-                {"country": "中国", "area": "上海", "city": "嘉定", "confirm": 1, "suspect": 0, "dead": 0, "heal": 0,
-                 "n_confirm": 1, "n_suspect": 0, "n_dead": 0, "n_heal": 0},
-                {"country": "中国", "area": "上海", "city": "奉贤", "confirm": 1, "suspect": 0, "dead": 0, "heal": 0,
-                 "n_confirm": 1, "n_suspect": 0, "n_dead": 0, "n_heal": 0},
-                {"country": "中国", "area": "辽宁", "city": "辽阳", "confirm": 1, "suspect": 0, "dead": 0, "heal": 0,
-                 "n_confirm": 1, "n_suspect": 0, "n_dead": 0, "n_heal": 0},
-                {"area": "辽宁", "confirm": 30, "suspect": 0, "dead": 0, "heal": 0, "city": "辽宁", "n_confirm": 3,
-                 "n_suspect": 0, "n_dead": 0, "n_heal": 0},
-                {"confirm": 4533, "dead": 106, "heal": 60, "suspect": 6973, "area": "全国", "country": "全国", "city": "全国",
-                 "n_confirm": 4, "n_suspect": 0, "n_dead": 0, "n_heal": 0}]
+        self.update_city = [
+            {"country": "中国", "area": "辽宁", "city": "沈阳", "confirm": 8, "suspect": 0, "dead": 0, "heal": 0,
+             "n_confirm": 1, "n_suspect": 0, "n_dead": 0, "n_heal": 0},
+            {"area": "天津", "confirm": 24, "suspect": 0, "dead": 0, "heal": 0, "city": "天津", "n_confirm": 1,
+             "n_suspect": 0, "n_dead": 0, "n_heal": 0},
+            {"country": "中国", "area": "辽宁", "city": "丹东", "confirm": 5, "suspect": 0, "dead": 0, "heal": 0,
+             "n_confirm": 1, "n_suspect": 0, "n_dead": 0, "n_heal": 0},
+            {"country": "中国", "area": "上海", "city": "外地来沪", "confirm": 33, "suspect": 0, "dead": 0, "heal": 0,
+             "n_confirm": 33, "n_suspect": 0, "n_dead": 0, "n_heal": 0},
+            {"country": "中国", "area": "上海", "city": "浦东", "confirm": 9, "suspect": 0, "dead": 0, "heal": 0,
+             "n_confirm": 9, "n_suspect": 0, "n_dead": 0, "n_heal": 0},
+            {"country": "中国", "area": "上海", "city": "长宁", "confirm": 5, "suspect": 0, "dead": 0, "heal": 0,
+             "n_confirm": 5, "n_suspect": 0, "n_dead": 0, "n_heal": 0},
+            {"country": "中国", "area": "上海", "city": "静安", "confirm": 5, "suspect": 0, "dead": 0, "heal": 0,
+             "n_confirm": 5, "n_suspect": 0, "n_dead": 0, "n_heal": 0},
+            {"country": "中国", "area": "上海", "city": "徐汇", "confirm": 3, "suspect": 0, "dead": 0, "heal": 0,
+             "n_confirm": 3, "n_suspect": 0, "n_dead": 0, "n_heal": 0},
+            {"country": "中国", "area": "上海", "city": "虹口", "confirm": 2, "suspect": 0, "dead": 0, "heal": 0,
+             "n_confirm": 2, "n_suspect": 0, "n_dead": 0, "n_heal": 0},
+            {"country": "中国", "area": "上海", "city": "闵行", "confirm": 2, "suspect": 0, "dead": 0, "heal": 0,
+             "n_confirm": 2, "n_suspect": 0, "n_dead": 0, "n_heal": 0},
+            {"country": "中国", "area": "上海", "city": "青浦", "confirm": 2, "suspect": 0, "dead": 0, "heal": 0,
+             "n_confirm": 2, "n_suspect": 0, "n_dead": 0, "n_heal": 0},
+            {"country": "中国", "area": "上海", "city": "黄埔", "confirm": 2, "suspect": 0, "dead": 0, "heal": 0,
+             "n_confirm": 2, "n_suspect": 0, "n_dead": 0, "n_heal": 0},
+            {"country": "中国", "area": "上海", "city": "宝山", "confirm": 1, "suspect": 0, "dead": 0, "heal": 0,
+             "n_confirm": 1, "n_suspect": 0, "n_dead": 0, "n_heal": 0},
+            {"country": "中国", "area": "上海", "city": "嘉定", "confirm": 1, "suspect": 0, "dead": 0, "heal": 0,
+             "n_confirm": 1, "n_suspect": 0, "n_dead": 0, "n_heal": 0},
+            {"country": "中国", "area": "上海", "city": "奉贤", "confirm": 1, "suspect": 0, "dead": 0, "heal": 0,
+             "n_confirm": 1, "n_suspect": 0, "n_dead": 0, "n_heal": 0},
+            {"country": "中国", "area": "辽宁", "city": "辽阳", "confirm": 1, "suspect": 0, "dead": 0, "heal": 0,
+             "n_confirm": 1, "n_suspect": 0, "n_dead": 0, "n_heal": 0},
+            {"area": "辽宁", "confirm": 30, "suspect": 0, "dead": 0, "heal": 0, "city": "辽宁", "n_confirm": 3,
+             "n_suspect": 0, "n_dead": 0, "n_heal": 0},
+            {"confirm": 4533, "dead": 106, "heal": 60, "suspect": 6973, "area": "全国", "country": "全国", "city": "全国",
+             "n_confirm": 4, "n_suspect": 0, "n_dead": 0, "n_heal": 0}]
 
     def testCheckRegister(self):
         assert check_whether_register("订阅湖北") == True
@@ -119,7 +121,7 @@ class testNcovWeRobot(unittest.TestCase):
         assert succ == ['湖北', '重庆']
         succ, failed = user_unsubscribe_multi(conn, 'test', '取消重庆市', jieba)
         assert succ == ['重庆']
-        succ, failed = user_unsubscribe_multi(conn, 'test', '取关全国', jieba)
+        succ, failed = user_unsubscribe_multi(conn, 'test', '取关全部', jieba)
         assert succ == ['全部']
         succ, failed = user_unsubscribe_multi(conn, 'test', '取消湖南', jieba)
         assert succ == [] and failed == ['湖南']
@@ -160,6 +162,18 @@ class testNcovWeRobot(unittest.TestCase):
         else:
             print("exists")
 
+    def test_construct_push_info(self):
+        city1 = {'city': '某某地区', 'confirm': 100, 'dead': 0, 'n_dead': 100, 'heal': 0, 'suspect': 0, 'n_confirm': 50,
+                'n_suspect': 50, 'n_heal': 100}
+        city2 = {'city': '某某地区', 'confirm': 100, 'dead': 0, 'n_dead': 100, 'heal': 0, 'suspect': 0, 'n_confirm': 50,
+                'n_suspect': 0, 'n_heal': 0}
+        print(construct_push_info(city1))
+        print(construct_push_info(city2))
+
+    def test_info_tail(self):
+        for i in range(20):
+            print(get_random_tail())
+
     def save_data_loop(self):
         while True:
             self.sp.re.set(SHOULD_UPDATE, 1)
@@ -168,4 +182,3 @@ class testNcovWeRobot(unittest.TestCase):
 
     def test_move_image(self):
         move_image('../200128-081500.png', os.path.join(BASE_DIR, 'download_image/') + '200128-081500.png')
-

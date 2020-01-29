@@ -1,8 +1,10 @@
+import random
 import re
 import time
 
 from src.util.constant import ALL_AREA_KEY, AREA_TAIL, FIRST_NCOV_INFO, NO_NCOV_INFO, ORDER_KEY, UN_REGIST_PATTERN, \
-    UN_REGIST_PATTERN2, SHOULD_UPDATE, UPDATE_CITY, SEND_SPLIT, UPDATE_NCOV_INFO, UPDATE_NCOV_INFO_ALL, SHORT_TIME_SPLIT
+    UN_REGIST_PATTERN2, SHOULD_UPDATE, UPDATE_CITY, SEND_SPLIT, UPDATE_NCOV_INFO, UPDATE_NCOV_INFO_ALL, \
+    SHORT_TIME_SPLIT, INFO_TAILS
 from src.util.log import LogSupport
 from src.util.redis_config import load_last_info
 import json
@@ -67,7 +69,7 @@ def user_unsubscribe_multi(conn, user, area, jieba):
     unsubscribe_list = []
     unsubscribe_list_fail = []
     # 全部取消订阅
-    if area.find("全部") != -1 or area.find("全国") != -1:
+    if area.find("全部") != -1:
         for area in all_order_area:
             conn.srem(area, user)
         unsubscribe_list.append("全部")
@@ -145,13 +147,7 @@ def do_ncov_update(conn, itchat, debug=True):
                     continue
                 update_city = json.loads(update_city)
                 for city in update_city:
-                    if city['city'] == '全国' or city['city'] == '中国':
-                        push_info = UPDATE_NCOV_INFO_ALL.format(city['city'], city['n_confirm'], city['n_suspect'],
-                                                                city['confirm'], city['suspect'], city['dead'],
-                                                                city['heal'])
-                    else:
-                        push_info = UPDATE_NCOV_INFO.format(city['city'], city['n_confirm'], city['confirm'],
-                                                            city['dead'], city['heal'])
+                    push_info = construct_push_info(city)
                     subscribe_user = conn.smembers(city['city'])
 
                     ls.logging.info("begin to send info...")
@@ -160,7 +156,7 @@ def do_ncov_update(conn, itchat, debug=True):
                             ls.logging.info("info:{},user: {}".format(push_info[:20], user))
                             itchat.send(push_info, toUserName=user)
                             # 发送太快容易出事
-                            time.sleep(SEND_SPLIT)
+                            time.sleep(get_random_split())
                         except BaseException as e:
                             ls.logging.error("send failed，{}".format(user))
                             ls.logging.exception(e)
@@ -171,7 +167,36 @@ def do_ncov_update(conn, itchat, debug=True):
     except BaseException as e:
         ls.logging.error("Error in check ncov update-----")
         ls.logging.exception(e)
+
+def construct_push_info(city):
+
+    area = '{}有数据更新，新增'.format(city['city'])
+    n_confirm = '确诊病例{}例'.format(city['n_confirm']) if city['n_confirm'] > 0 else ''
+    n_suspect = '疑似病例{}例'.format(city['n_suspect']) if city['n_suspect'] > 0 else ''
+    n_heal = '治愈病例{}例'.format(city['n_heal']) if city['n_heal'] > 0 else ''
+    n_dead = '死亡病例{}例'.format(city['n_dead']) if city['n_dead'] > 0 else ''
+    push_info = list(filter(lambda x: len(x) > 0, [n_confirm, n_suspect, n_heal, n_dead]))
+    push_info_str = area + "、".join(push_info) + "；"
+
+    confirm = '目前共有确诊病例{}例'.format(city['confirm'])
+    suspect = '疑似病例{}例'.format(city['suspect']) if city['suspect'] > 0 else ''
+    heal = '治愈病例{}例'.format(city['heal'])
+    dead = '死亡病例{}例'.format(city['dead'])
+    push_info = list(filter(lambda x: len(x) > 0, [confirm, suspect, heal, dead]))
+    push_info_str += "、".join(push_info) + "。"
+    push_info_str += get_random_tail()
+    return push_info_str
+
 def check_help(text):
     text = text.lower()
     return re.match('^help|帮助$', text) != None
+
+def get_random_tail():
+    return INFO_TAILS[random.randint(0, 9)]
+
+def get_random_split():
+    return random.random() * 6
+
+def get_random_split_short():
+    return random.random() * 3
 
