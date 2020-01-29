@@ -3,7 +3,7 @@ import re
 import time
 
 import requests
-from src.util.constant import USER_FOCUS_GROUP, SEND_SPLIT
+from src.util.constant import USER_FOCUS_GROUP, SEND_SPLIT, USER_FOCUS_GROUP_NAME
 from urllib import parse
 from src.util.log import LogSupport
 
@@ -13,26 +13,27 @@ from src.util.log import LogSupport
 ls = LogSupport()
 
 def check_whether_identify(text):
-    return re.match('^鉴别.+', text) != None
+    return re.match('^辟谣.+', text) != None
 
 def check_whether_unidentify(text):
-    return re.match('^停止鉴别.+', text) != None
+    return re.match('^停止辟谣.+', text) != None
 
 def add_identify_group(conn, itchat, group):
-    group_name = group.replace("鉴别", '')
+    group_name = group.replace("辟谣", '')
     target_chatroom = itchat.search_chatrooms(group_name)
     succ = []
     failed = []
     if len(target_chatroom) > 0:
         chatroom_name = target_chatroom[0]['UserName']
         conn.sadd(USER_FOCUS_GROUP, chatroom_name)
+        conn.sadd(USER_FOCUS_GROUP_NAME, group_name)
         succ.append(group_name)
     else:
         failed.append(group_name)
     return succ, failed
 
 def cancel_identify_group(conn, itchat, group):
-    group_name = group.replace("停止鉴别", '')
+    group_name = group.replace("停止辟谣", '')
     target_chatroom = itchat.search_chatrooms(group_name)
     succ = []
     failed = []
@@ -90,3 +91,9 @@ def identify_news(text_list, itchat, group_name):
 def parse_identify_res(text, source):
     reply_text = '这个{}是{}，真实情况是: {}。不信的话你可以点这里看详情:{}'.format(text[0:15], source['result'], source['abstract'], source['oriurl'])
     return reply_text
+
+def restore_group(conn, itchat):
+    conn.delete(USER_FOCUS_GROUP)
+    group_name = conn.smembers(USER_FOCUS_GROUP_NAME)
+    for name in group_name:
+        add_identify_group(conn, itchat, name)
