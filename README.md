@@ -3,6 +3,9 @@
 ### 简介
 
 基于itchat，使用个人微信账户，利用爬虫信息从网络上搜集实时疫情数据，用户通过微信消息进行订阅，若出现相关信息，则主动对用户进行推送。可根据用户指令监控群聊，对群内出现的新闻、分享、图片自动进行辟谣。
+![](resource/image/online.jpg)
+
+> 图1 登陆成功之后的提醒
 
 ## 功能列表
 
@@ -90,7 +93,7 @@ docker logs ncovwerobot_ncov_robot_1
 若未安装git，可直接在github下载ZIP
 
 ![](resource/image/download.png)
-> 图1 github直接下载zip
+> 图2 github直接下载zip
 
 - 3.打开Powershell（cmd也行，不建议）,输入如下指令：
 
@@ -107,10 +110,7 @@ docker logs ncovwerobot_ncov_robot_1
 
 #### 1.登陆
 
-二维码会打印在控制台上，扫码登陆成功后，文件传输助手会收到消息
-![](resource/image/online.jpg)
-
-> 图2 登陆成功之后的提醒
+二维码会打印在控制台上，扫码登陆成功后，文件传输助手会收到登陆成功的消息（如图2）。
 
 向文件传入助手发送Help/帮助可以获得帮助信息（如图3-左）
 
@@ -137,13 +137,9 @@ docker logs ncovwerobot_ncov_robot_1
 
 你可以发送CX查询已经启用了谣言检测的群聊
 
-<img src="./resource/image/p4.jpg" width="30%">
+![](./resource/image/p4.jpg)
 
->图5：辟谣
-
-#### 部分运行截图
-
-
+>图5：开启辟谣和停止辟谣
 
 ### 使用注意
 
@@ -151,4 +147,4 @@ docker logs ncovwerobot_ncov_robot_1
 
 2.给同一人发送的类似的信息过多时，新发送的信息会无法送达，必须要该用户主动响应一下才行。这是微信的限制，很难解决。
 
-3.本项目频繁使用之后可能会造成您无法无法登陆网页版微信（手机微信不影响）。
+3.本项目频繁使用之后可能会造成您无法无法登陆网页版微信。
