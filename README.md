@@ -80,7 +80,7 @@ brew install -y vim python-pip curl git
 # 安装docker-compose
 pip install docker-compose
 # 下载
-git clone https://github.com/wuhan-support/NcovWeRobotPersonal.git && cd NcovWeRobotPersonal
+git clone https://github.com/wuhan-support/robot-personal.git && cd robot-personal
 # 编译并启动服务
 docker-compose up -d
 # 查看微信二维码，使用手机微信扫码登陆（本质上是登陆网页版微信，所以手机微信必须同时登陆）
@@ -103,7 +103,7 @@ docker logs ncovwerobot_ncov_robot_1
 ```
 pip install docker-compose
 # 已下载zip的则跳过这一步
-git clone https://github.com/wuhan-support/NcovWeRobotPersonal.git && cd NcovWeRobotPersonal
+git clone https://github.com/wuhan-support/robot-personal.git && cd robot-personal
 docker-compose up -d
 # 查看微信二维码，使用手机微信扫码登陆（本质上是登陆网页版微信，所以手机微信必须同时登陆）
 docker logs ncovwerobot_ncov_robot_1
