@@ -5,9 +5,11 @@ import time
 import requests
 from src.util.constant import USER_FOCUS_GROUP, SEND_SPLIT
 from urllib import parse
-import os
 from src.util.log import LogSupport
 
+"""
+针对微信群的功能函数
+"""
 ls = LogSupport()
 
 def check_whether_identify(text):
@@ -30,7 +32,7 @@ def add_identify_group(conn, itchat, group):
     return succ, failed
 
 def cancel_identify_group(conn, itchat, group):
-    group_name = group.repace("取消鉴别", '')
+    group_name = group.replace("取消鉴别", '')
     target_chatroom = itchat.search_chatrooms(group_name)
     succ = []
     failed = []
