@@ -89,7 +89,8 @@ def text_reply(msg):
 def text_reply(msg):
     if msg['FromUserName'] == itchat.originInstance.storageClass.userName and msg['ToUserName'] != 'filehelper':
         return
-    if len(msg.text) < 50:
+    # 筛掉过短的长文和重复字段过多的长文
+    if len(msg.text) < 50 or len(set(msg.text)) < 20:
         return
     focus_group = conn.smembers(USER_FOCUS_GROUP)
     if msg['FromUserName'] not in focus_group:
@@ -119,6 +120,7 @@ def text_reply(msg):
         return
     # 获取文字摘要
     text_list = get_text_summary(msg.text, topK=2)
+    text_list = list(filter(lambda x: len(x) > 10, text_list))
     # 鉴别
     identify_news(text_list, itchat, msg['FromUserName'])
 
@@ -127,13 +129,19 @@ def text_reply(msg):
     if msg['FromUserName'] == itchat.originInstance.storageClass.userName and msg['ToUserName'] != 'filehelper':
         return
     focus_group = conn.smembers(USER_FOCUS_GROUP)
+
     if msg['FromUserName'] not in focus_group:
         return
+    # 带有辟谣等字眼的信息直接返回
+    if check_identify(msg.text):
+        return
+
     if check_image(msg.fileName):
         msg.download(msg.fileName)
         # new_file = os.path.join(BASE_DIR, 'download_image/') + msg.fileName
         text_list = ocr(msg.fileName)
         text_list = list(filter(lambda x: len(x) > 10, text_list))
+        # 删除图片
         remove_image(msg.fileName)
         identify_news(text_list, itchat, msg['FromUserName'])
 

@@ -3,7 +3,7 @@ import unittest
 
 import itchat
 
-from src.util.util import move_image
+from src.util.util import move_image, check_identify
 from src.robot.NcovWeRobotFunc import *
 from src.robot.NcovWeRobotServer import do_ncov_update, start_server
 from src.spider.TXSpider import TXSpider
@@ -141,6 +141,14 @@ class testNcovWeRobot(unittest.TestCase):
         p = threading.Thread(target=self.save_data_loop)
         p.start()
         start_server()
+
+    def test_check_identify(self):
+        test1 = '湖北省防控指挥部'
+        test2 = '这是谣言'
+        test3 = '辟谣！'
+        assert check_identify(test1) == True
+        assert check_identify(test2) == True
+        assert check_identify(test3) == True
 
     def save_data_loop(self):
         while True:
