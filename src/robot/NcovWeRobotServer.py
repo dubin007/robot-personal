@@ -13,7 +13,8 @@ from src.ocr.TextSummary import get_text_summary
 from src.util.util import check_image, check_identify, remove_image
 from itchat.content import *
 from src.robot.NcovWeRobotFunc import *
-from src.util.constant import INFO_TAIL, INFO_TAIL_ALL, SEND_SPLIT, FOCUS_TAIL, BASE_DIR, HELP_CONTENT
+from src.util.constant import INFO_TAIL, INFO_TAIL_ALL, SEND_SPLIT, FOCUS_TAIL, BASE_DIR, HELP_CONTENT, \
+    GROUP_CONTENT_HELP, SEND_SPLIT_SHORT
 from src.util.redis_config import connect_redis
 from src.robot.NcovGroupRobot import *
 
@@ -57,34 +58,37 @@ def text_reply(msg):
         ls.logging.info('用户%s: %s %s' % (msg.user.UserName, succ_text, failed_text))
         itchat.send('%s %s' % (succ_text, failed_text), toUserName=msg.user.UserName)
 
-    elif msg['ToUserName'] == 'filehelper' and check_whether_identify(msg.text):
-        succ, failed = add_identify_group(conn, itchat, msg.text)
-        succ_text =''
-        failed_text = ''
-        if len(succ) > 0:
-            succ_text = '成功关注{}，会自动鉴别该群的疫情谣言'.format("，".join(succ))
-        else:
-            failed_text = '关注{}失败，请检查该群名称是否正确'.format("，".join(failed))
-        ls.logging.info('用户%s: %s %s' % (msg.user.UserName, succ_text, failed_text))
-        itchat.send('%s %s' % (succ_text, failed_text), toUserName='filehelper')
-        if len(succ) > 0:
-            time.sleep(SEND_SPLIT)
-            itchat.send(FOCUS_TAIL, toUserName='filehelper')
-
-    elif msg['ToUserName'] == 'filehelper' and check_whether_unidentify(msg.text):
-        succ, failed = cancel_identify_group(conn, itchat, msg.text)
-        succ_text = ''
-        failed_text = ''
-        if len(succ) > 0:
-            succ_text = '停止鉴别{}等群的谣言成功'.format("，".join(succ))
-        else:
-            failed_text = '停止鉴别{}等群的谣言失败，请检查该群名称是否正确'.format("，".join(failed))
-        ls.logging.info('用户%s: %s %s' % (msg.user.UserName, succ_text, failed_text))
-        itchat.send('%s %s' % (succ_text, failed_text), toUserName='filehelper')
-
-    elif msg['ToUserName'] == 'filehelper' and check_help(msg.text):
-        time.sleep(SEND_SPLIT)
-        return itchat.send(HELP_CONTENT, toUserName='filehelper')
+    elif msg['ToUserName'] == 'filehelper':
+        if check_whether_identify(msg.text):
+            succ, failed = add_identify_group(conn, itchat, msg.text)
+            succ_text =''
+            failed_text = ''
+            if len(succ) > 0:
+                succ_text = '成功关注{}，会自动鉴别该群的疫情谣言'.format("，".join(succ))
+            else:
+                failed_text = '关注{}失败，请检查该群名称是否正确'.format("，".join(failed))
+            ls.logging.info('用户%s: %s %s' % (msg.user.UserName, succ_text, failed_text))
+            itchat.send('%s %s' % (succ_text, failed_text), toUserName='filehelper')
+            if len(succ) > 0:
+                time.sleep(SEND_SPLIT_SHORT)
+                itchat.send(FOCUS_TAIL, toUserName='filehelper')
+        elif check_whether_unidentify(msg.text):
+            succ, failed = cancel_identify_group(conn, itchat, msg.text)
+            succ_text = ''
+            failed_text = ''
+            if len(succ) > 0:
+                succ_text = '停止鉴别{}等群的谣言成功'.format("，".join(succ))
+            else:
+                failed_text = '停止鉴别{}等群的谣言失败，请检查该群名称是否正确'.format("，".join(failed))
+            ls.logging.info('用户%s: %s %s' % (msg.user.UserName, succ_text, failed_text))
+            itchat.send('%s %s' % (succ_text, failed_text), toUserName='filehelper')
+        elif check_help(msg.text):
+            time.sleep(SEND_SPLIT_SHORT)
+            itchat.send(HELP_CONTENT, toUserName='filehelper')
+        elif msg.text == 'CX':
+            time.sleep(SEND_SPLIT_SHORT)
+            groups = list(conn.smembers(USER_FOCUS_GROUP_NAME))
+            itchat.send(GROUP_CONTENT_HELP.format("，".join(groups)))
 
 @itchat.msg_register([TEXT, NOTE], isGroupChat=True)
 def text_reply(msg):
