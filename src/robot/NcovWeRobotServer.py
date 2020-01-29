@@ -82,6 +82,9 @@ def text_reply(msg):
         ls.logging.info('用户%s: %s %s' % (msg.user.UserName, succ_text, failed_text))
         itchat.send('%s %s' % (succ_text, failed_text), toUserName='filehelper')
 
+    elif msg['ToUserName'] == 'filehelper':
+        pass
+
 @itchat.msg_register([TEXT, NOTE], isGroupChat=True)
 def text_reply(msg):
     if msg['FromUserName'] == itchat.originInstance.storageClass.userName and msg['ToUserName'] != 'filehelper':

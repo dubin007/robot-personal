@@ -9,6 +9,10 @@ from src.util.redis_config import connect_redis, save_json_info, load_last_info,
 
 class TXSpider():
     def __init__(self, debug=True):
+        """
+        爬取腾讯新闻平台的实时疫情数据
+        :param debug:
+        """
         self.req = requests.Session()
         self.log = LogSupport()
         self.re = connect_redis()
