@@ -84,7 +84,7 @@ def text_reply(msg):
 
     elif msg['ToUserName'] == 'filehelper' and check_help(msg.text):
         time.sleep(SEND_SPLIT)
-        return itchat.send(FOCUS_TAIL, toUserName='filehelper')
+        return itchat.send(HELP_CONTENT, toUserName='filehelper')
 
 @itchat.msg_register([TEXT, NOTE], isGroupChat=True)
 def text_reply(msg):
