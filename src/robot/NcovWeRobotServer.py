@@ -76,9 +76,9 @@ def text_reply(msg):
         succ_text = ''
         failed_text = ''
         if len(succ) > 0:
-            succ_text = '停止鉴别{}成功'.format("，".join(succ))
+            succ_text = '停止鉴别{}等群的谣言成功'.format("，".join(succ))
         else:
-            failed_text = '停止鉴别{}失败，请检查该群名称是否正确'.format("，".join(failed))
+            failed_text = '停止鉴别{}等群的谣言失败，请检查该群名称是否正确'.format("，".join(failed))
         ls.logging.info('用户%s: %s %s' % (msg.user.UserName, succ_text, failed_text))
         itchat.send('%s %s' % (succ_text, failed_text), toUserName='filehelper')
 
@@ -109,6 +109,9 @@ def text_reply(msg):
         return
     if check_identify(msg.text):
         return
+    # 判断是在否在关注的群列表里
+    if not conn.sismember(USER_FOCUS_GROUP, msg['FromUserName']):
+        return
     # 鉴别
     identify_news([msg.text], itchat, msg['FromUserName'])
 
@@ -125,8 +128,7 @@ def text_reply(msg):
 def text_reply(msg):
     if msg['FromUserName'] == itchat.originInstance.storageClass.userName and msg['ToUserName'] != 'filehelper':
         return
-    focus_group = conn.smembers(USER_FOCUS_GROUP)
-    if msg['FromUserName'] not in focus_group:
+    if not conn.sismember(USER_FOCUS_GROUP, msg['FromUserName']):
         return
 
     if check_image(msg.fileName):

@@ -150,6 +150,16 @@ class testNcovWeRobot(unittest.TestCase):
         assert check_identify(test2) == True
         assert check_identify(test3) == True
 
+    def test_group_exists(self):
+        test1 = '群1'
+        key1 = 'test_set'
+        conn = connect_redis()
+        conn.sadd(key1, test1)
+        if not conn.sismember(key1, test1):
+            print("not exists")
+        else:
+            print("exists")
+
     def save_data_loop(self):
         while True:
             self.sp.re.set(SHOULD_UPDATE, 1)
