@@ -13,7 +13,7 @@ from src.ocr.TextSummary import get_text_summary
 from src.util.util import check_image, check_identify, remove_image
 from itchat.content import *
 from src.robot.NcovWeRobotFunc import *
-from src.util.constant import INFO_TAIL, INFO_TAIL_ALL, SEND_SPLIT, FOCUS_TAIL, BASE_DIR
+from src.util.constant import INFO_TAIL, INFO_TAIL_ALL, SEND_SPLIT, FOCUS_TAIL, BASE_DIR, HELP_CONTENT
 from src.util.redis_config import connect_redis
 from src.robot.NcovGroupRobot import *
 
@@ -76,14 +76,14 @@ def text_reply(msg):
         succ_text = ''
         failed_text = ''
         if len(succ) > 0:
-            succ_text = '取消鉴别{}成功'.format("，".join(succ))
+            succ_text = '停止鉴别{}成功'.format("，".join(succ))
         else:
-            failed_text = '取消鉴别{}失败，请检查该群名称是否正确'.format("，".join(failed))
+            failed_text = '停止鉴别{}失败，请检查该群名称是否正确'.format("，".join(failed))
         ls.logging.info('用户%s: %s %s' % (msg.user.UserName, succ_text, failed_text))
         itchat.send('%s %s' % (succ_text, failed_text), toUserName='filehelper')
 
-    elif msg['ToUserName'] == 'filehelper':
-        pass
+    elif msg['ToUserName'] == 'filehelper' and check_help(msg.text):
+        return HELP_CONTENT
 
 @itchat.msg_register([TEXT, NOTE], isGroupChat=True)
 def text_reply(msg):
@@ -118,28 +118,24 @@ def text_reply(msg):
         return
     if check_identify(msg.text):
         return
-    # 获取文字摘要
-    text_list = get_text_summary(msg.text, topK=2)
-    text_list = list(filter(lambda x: len(x) > 10, text_list))
     # 鉴别
-    identify_news(text_list, itchat, msg['FromUserName'])
+    identify_news([msg.text], itchat, msg['FromUserName'])
 
 @itchat.msg_register([PICTURE, RECORDING, ATTACHMENT, VIDEO], isGroupChat=True)
 def text_reply(msg):
     if msg['FromUserName'] == itchat.originInstance.storageClass.userName and msg['ToUserName'] != 'filehelper':
         return
     focus_group = conn.smembers(USER_FOCUS_GROUP)
-
     if msg['FromUserName'] not in focus_group:
-        return
-    # 带有辟谣等字眼的信息直接返回
-    if check_identify(msg.text):
         return
 
     if check_image(msg.fileName):
         msg.download(msg.fileName)
         # new_file = os.path.join(BASE_DIR, 'download_image/') + msg.fileName
         text_list = ocr(msg.fileName)
+        # 带有辟谣等字眼的信息直接返回
+        if check_identify(msg.text):
+            return
         text_list = list(filter(lambda x: len(x) > 10, text_list))
         # 删除图片
         remove_image(msg.fileName)
