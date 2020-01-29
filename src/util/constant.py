@@ -1,6 +1,7 @@
 import sys
 import os
 import random
+
 curPath = os.path.abspath(os.path.dirname(__file__))
 rootPath = os.path.split(curPath)[0]
 BASE_PATH = os.path.split(rootPath)[0]
@@ -58,3 +59,5 @@ TIME_SPLIT = 60 * 3
 SHORT_TIME_SPLIT = 60 * 5
 
 SEND_SPLIT = random.random() * 10
+
+HELP_CONTENT = "您好！这是微信疫情小助手（非官方）！我有以下功能：发送 订阅/取消+地区名 关注/取消该地区疫情；发送鉴别+群名，将对该群的新闻长文、链接分享、截图自动进行辟谣，使用停止鉴别+群名停止该功能。以上所有数据来自腾讯\"疫情实时追踪\"平台，链接：https://news.qq.com//zt2020/page/feiyan.htm"
