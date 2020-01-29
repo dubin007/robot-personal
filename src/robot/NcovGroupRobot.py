@@ -16,7 +16,7 @@ def check_whether_identify(text):
     return re.match('^鉴别.+', text) != None
 
 def check_whether_unidentify(text):
-    return re.match('^取消鉴别.+', text) != None
+    return re.match('^停止鉴别.+', text) != None
 
 def add_identify_group(conn, itchat, group):
     group_name = group.replace("鉴别", '')
@@ -32,7 +32,7 @@ def add_identify_group(conn, itchat, group):
     return succ, failed
 
 def cancel_identify_group(conn, itchat, group):
-    group_name = group.replace("取消鉴别", '')
+    group_name = group.replace("停止鉴别", '')
     target_chatroom = itchat.search_chatrooms(group_name)
     succ = []
     failed = []
