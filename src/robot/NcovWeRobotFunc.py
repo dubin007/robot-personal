@@ -172,5 +172,6 @@ def do_ncov_update(conn, itchat, debug=True):
         ls.logging.error("Error in check ncov update-----")
         ls.logging.exception(e)
 def check_help(text):
+    text = text.lower()
     return re.match('^help|帮助$', text) != None
 
