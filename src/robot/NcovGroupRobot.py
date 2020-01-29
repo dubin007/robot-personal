@@ -3,6 +3,8 @@ import re
 import time
 
 import requests
+
+from src.robot.IdentifyNews import get_identify_result
 from src.util.constant import USER_FOCUS_GROUP, SEND_SPLIT, USER_FOCUS_GROUP_NAME
 from urllib import parse
 from src.util.log import LogSupport
@@ -46,48 +48,11 @@ def cancel_identify_group(conn, itchat, group):
         failed.append(group_name)
     return succ, failed
 
-def get_headers():
-    return {
-        'host': 'vp.fact.qq.com',
-        'user-agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A372 Safari/604.1',
-        'sec-fetch-mode': 'no-cors',
-        'sec-fetch-site': 'same-origin',
-        'referer': 'https://vp.fact.qq.com/home?state=2'
-    }
-
-def get_identify_url(title):
-    url = 'https://vp.fact.qq.com/searchresult?'
-    params = {
-        'title': title,
-        'num': 0
-    }
-    return url + parse.urlencode(params)
-
 def identify_news(text_list, itchat, group_name):
-    req = requests.Session()
-    for text in text_list:
-        res = req.get(url=get_identify_url(text), headers=get_headers())
-        if res.status_code != 200:
-            ls.logging.error("查询较真平台出错，状态码：{}".format(res.status_code))
-        content = res.content.decode("utf-8")
-        if content:
-            content = json.loads(content)
-        else:
-            continue
-        if content['total'] == 0:
-            continue
-        else:
-            source = content['content']
-            for item in source:
-                if item['_source']['result'] != '真-确实如此':
-                    source = item['_source']
-                    reply = parse_identify_res(text, source)
-                    # 发送消息
-                    ls.logging.info("谣言：{}，来源:{}".format(text, source['oriurl']))
-                    itchat.send(reply, group_name)
-                    time.sleep(SEND_SPLIT)
-                    return
-        ls.logging.info("非谣言：{}".format(text))
+    reply = get_identify_result(text_list)
+    if reply != None:
+        itchat.send(reply, group_name)
+        time.sleep(SEND_SPLIT)
 
 def parse_identify_res(text, source):
     reply_text = '这个{}是{}，真实情况是: {}。不信的话你可以点这里看详情:{}'.format(text[0:15], source['result'], source['abstract'], source['oriurl'])
