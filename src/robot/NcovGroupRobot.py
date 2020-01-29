@@ -95,5 +95,11 @@ def parse_identify_res(text, source):
 def restore_group(conn, itchat):
     conn.delete(USER_FOCUS_GROUP)
     group_name = conn.smembers(USER_FOCUS_GROUP_NAME)
+    succ_list = []
+    failed_list = []
     for name in group_name:
-        add_identify_group(conn, itchat, name)
+        succ, failed = add_identify_group(conn, itchat, name)
+        succ_list.extend(succ)
+        failed_list.extend(failed)
+
+    ls.logging.info("成功恢复的辟谣群聊:{},失败的:{}".format("，".join(succ_list), "，".join(failed_list)))

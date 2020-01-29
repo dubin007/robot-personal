@@ -24,71 +24,75 @@ from src.spider.SpiderServer import start_tx_spider
 
 @itchat.msg_register([TEXT])
 def text_reply(msg):
-    if msg['FromUserName'] == itchat.originInstance.storageClass.userName and msg['ToUserName'] != 'filehelper':
-        return
-    if check_whether_register(msg.text):
-        succ, failed = user_subscribe(conn, msg.user.UserName, msg.text, jieba)
-        succ_text = ''
-        if len(succ) > 0:
-            succ_text = '成功订阅{}的疫情信息!'.format(",".join(succ))
-        failed_text = ''
-        if len(failed) > 0:
-            failed_text = '订阅{}失败，该地区名称不正确或暂无疫情信息。'.format("，".join(failed))
-        # msg.user.send('%s: %s' % (succ_text, failed_text))
-        ls.logging.info('用户%s: %s %s' % (msg.user.UserName, succ_text, failed_text))
-        itchat.send('%s %s' % (succ_text, failed_text), toUserName=msg.user.UserName)
-        if len(succ) > 0:
-            time.sleep(SEND_SPLIT)
-            itchat.send(get_ncvo_info_with_city(conn, succ), toUserName=msg.user.UserName)
-            area = succ[0]
-            if area != '全国' and area != '中国':
-                time.sleep(SEND_SPLIT)
-                itchat.send(INFO_TAIL.format(area, area), toUserName=msg.user.UserName)
-            else:
-                time.sleep(SEND_SPLIT)
-                itchat.send(INFO_TAIL_ALL, toUserName=msg.user.UserName)
-    elif check_whether_unregist(msg.text):
-        succ, failed = user_unsubscribe_multi(conn, msg.user.UserName, msg.text, jieba)
-        succ_text = ''
-        if len(succ) > 0:
-            succ_text = '成功取消{}的疫情信息订阅'.format("，".join(succ))
-        failed_text = ''
-        if len(failed) > 0:
-            failed_text = '取消{}的疫情信息订阅失败，您好像没有订阅该地区信息或者地区名称错误'.format("，".join(failed))
-        ls.logging.info('用户%s: %s %s' % (msg.user.UserName, succ_text, failed_text))
-        itchat.send('%s %s' % (succ_text, failed_text), toUserName=msg.user.UserName)
-
-    elif msg['ToUserName'] == 'filehelper':
-        if check_whether_identify(msg.text):
-            succ, failed = add_identify_group(conn, itchat, msg.text)
-            succ_text =''
-            failed_text = ''
-            if len(succ) > 0:
-                succ_text = '成功关注{}，会自动鉴别该群的疫情谣言'.format("，".join(succ))
-            else:
-                failed_text = '关注{}失败，请检查该群名称是否正确'.format("，".join(failed))
-            ls.logging.info('用户%s: %s %s' % (msg.user.UserName, succ_text, failed_text))
-            itchat.send('%s %s' % (succ_text, failed_text), toUserName='filehelper')
-            if len(succ) > 0:
-                time.sleep(SEND_SPLIT_SHORT)
-                itchat.send(FOCUS_TAIL, toUserName='filehelper')
-        elif check_whether_unidentify(msg.text):
-            succ, failed = cancel_identify_group(conn, itchat, msg.text)
+    try:
+        if msg['FromUserName'] == itchat.originInstance.storageClass.userName and msg['ToUserName'] != 'filehelper':
+            return
+        if check_whether_register(msg.text):
+            succ, failed = user_subscribe(conn, msg.user.UserName, msg.text, jieba)
             succ_text = ''
-            failed_text = ''
             if len(succ) > 0:
-                succ_text = '停止鉴别{}等群的谣言成功'.format("，".join(succ))
-            else:
-                failed_text = '停止鉴别{}等群的谣言失败，请检查该群名称是否正确'.format("，".join(failed))
+                succ_text = '成功订阅{}的疫情信息!'.format(",".join(succ))
+            failed_text = ''
+            if len(failed) > 0:
+                failed_text = '订阅{}失败，该地区名称不正确或暂无疫情信息。'.format("，".join(failed))
+            # msg.user.send('%s: %s' % (succ_text, failed_text))
             ls.logging.info('用户%s: %s %s' % (msg.user.UserName, succ_text, failed_text))
-            itchat.send('%s %s' % (succ_text, failed_text), toUserName='filehelper')
-        elif check_help(msg.text):
-            time.sleep(SEND_SPLIT_SHORT)
-            itchat.send(HELP_CONTENT, toUserName='filehelper')
-        elif msg.text == 'CX':
-            time.sleep(SEND_SPLIT_SHORT)
-            groups = list(conn.smembers(USER_FOCUS_GROUP_NAME))
-            itchat.send(GROUP_CONTENT_HELP.format("，".join(groups)))
+            itchat.send('%s %s' % (succ_text, failed_text), toUserName=msg.user.UserName)
+            if len(succ) > 0:
+                time.sleep(SEND_SPLIT)
+                itchat.send(get_ncvo_info_with_city(conn, succ), toUserName=msg.user.UserName)
+                area = succ[0]
+                if area != '全国' and area != '中国':
+                    time.sleep(SEND_SPLIT)
+                    itchat.send(INFO_TAIL.format(area, area), toUserName=msg.user.UserName)
+                else:
+                    time.sleep(SEND_SPLIT)
+                    itchat.send(INFO_TAIL_ALL, toUserName=msg.user.UserName)
+        elif check_whether_unregist(msg.text):
+            succ, failed = user_unsubscribe_multi(conn, msg.user.UserName, msg.text, jieba)
+            succ_text = ''
+            if len(succ) > 0:
+                succ_text = '成功取消{}的疫情信息订阅'.format("，".join(succ))
+            failed_text = ''
+            if len(failed) > 0:
+                failed_text = '取消{}的疫情信息订阅失败，您好像没有订阅该地区信息或者地区名称错误'.format("，".join(failed))
+            ls.logging.info('用户%s: %s %s' % (msg.user.UserName, succ_text, failed_text))
+            itchat.send('%s %s' % (succ_text, failed_text), toUserName=msg.user.UserName)
+
+        elif msg['ToUserName'] == 'filehelper':
+            if check_whether_identify(msg.text):
+                succ, failed = add_identify_group(conn, itchat, msg.text)
+                succ_text =''
+                failed_text = ''
+                if len(succ) > 0:
+                    succ_text = '成功关注{}，会自动鉴别该群的疫情谣言'.format("，".join(succ))
+                else:
+                    failed_text = '关注{}失败，请检查该群名称是否正确'.format("，".join(failed))
+                ls.logging.info('用户%s: %s %s' % (msg.user.UserName, succ_text, failed_text))
+                itchat.send('%s %s' % (succ_text, failed_text), toUserName='filehelper')
+                if len(succ) > 0:
+                    time.sleep(SEND_SPLIT_SHORT)
+                    itchat.send(FOCUS_TAIL, toUserName='filehelper')
+            elif check_whether_unidentify(msg.text):
+                succ, failed = cancel_identify_group(conn, itchat, msg.text)
+                succ_text = ''
+                failed_text = ''
+                if len(succ) > 0:
+                    succ_text = '停止鉴别{}等群的谣言成功'.format("，".join(succ))
+                else:
+                    failed_text = '停止鉴别{}等群的谣言失败，请检查该群名称是否正确'.format("，".join(failed))
+                ls.logging.info('用户%s: %s %s' % (msg.user.UserName, succ_text, failed_text))
+                itchat.send('%s %s' % (succ_text, failed_text), toUserName='filehelper')
+            elif check_help(msg.text):
+                time.sleep(SEND_SPLIT_SHORT)
+                itchat.send(HELP_CONTENT, toUserName='filehelper')
+            elif msg.text.lower() == 'cx':
+                time.sleep(SEND_SPLIT_SHORT)
+                groups = list(conn.smembers(USER_FOCUS_GROUP_NAME))
+                itchat.send(GROUP_CONTENT_HELP.format("，".join(groups)), toUserName='filehelper')
+    except BaseException as e:
+        ls.logging.exception(e)
+
 
 @itchat.msg_register([TEXT, NOTE], isGroupChat=True)
 def text_reply(msg):
@@ -168,6 +172,7 @@ def start_server():
     p2 = threading.Thread(target=do_ncov_update, args=[conn, itchat, False])
     p2.start()
     itchat.send('Hello, 自动机器人又上线啦', toUserName='filehelper')
+    restore_group(conn, itchat)
     itchat.run(True)
 
 ocr = Image2Title(topK=5)
