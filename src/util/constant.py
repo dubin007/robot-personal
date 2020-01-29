@@ -46,16 +46,16 @@ AREA_TAIL = '(自治+)|省|市|县|区|镇'
 
 FIRST_NCOV_INFO = '{}目前有确诊病例{}例，死亡病例{}例，治愈病例{}例。为了保证您能持续收到消息，根据WX的规则，建议您偶尔回复我一下～'
 
-INFO1 = '向所有奋斗在抗击疫情一线的工作人员、志愿者致敬！'
-INFO2 = 'feiyan.help，病毒无情，但人间有爱。'
-INFO3 = '疫情严峻，请您尽量减少外出，避免出入公共场所'
-INFO4 = '为了保证您能持续最新的疫情消息，根据WX的规则，建议您偶尔回复我一下～'
-INFO5 = '全部数据来源于腾讯实时疫情追踪平台：https://news.qq.com//zt2020/page/feiyan.htm'
-INFO6 = '我们是公益组织wuhan.support，网址 https://feiyan.help'
-INFO7 = '这里是面向疫区内外民众和医疗机构的多维度信息整合平台，https://feiyan.help'
-INFO8 = 'https://feiyan.help，支持武汉，我们在一起。'
-INFO9 = '开源地址：https://github.com/wuhan-support，支持武汉，我们在一起。'
-INFO10 = '查看更多信息可以戳这里，https://feiyan.help'
+INFO1 = '\n向所有奋斗在抗击疫情一线的工作人员、志愿者致敬！'
+INFO2 = '\nfeiyan.help，病毒无情，但人间有爱。'
+INFO3 = '\n疫情严峻，请您尽量减少外出，避免出入公共场所'
+INFO4 = '\n为了保证您能持续最新的疫情消息，根据WX的规则，建议您偶尔回复我一下～'
+INFO5 = '\n全部数据来源于腾讯实时疫情追踪平台：https://news.qq.com//zt2020/page/feiyan.htm'
+INFO6 = '\n我们是公益组织wuhan.support，网址 https://feiyan.help'
+INFO7 = '\n这里是面向疫区内外民众和医疗机构的多维度信息整合平台，https://feiyan.help'
+INFO8 = '\nhttps://feiyan.help，支持武汉，我们在一起。'
+INFO9 = '\n开源地址：https://github.com/wuhan-support，支持武汉，我们在一起。'
+INFO10 = '\n查看更多信息可以戳这里，https://feiyan.help'
 
 INFO_TAILS = [INFO1, INFO2, INFO3, INFO4, INFO5, INFO6, INFO7, INFO8, INFO9, INFO10]
 
@@ -72,6 +72,8 @@ FOCUS_TAIL = "如果该群转发的新闻、截图或链接有谣言，将会自
 TIME_SPLIT = 60 * 3
 
 SHORT_TIME_SPLIT = 60 * 5
+
+LONG_TIME_SPLIT = 60 * 60
 
 SEND_SPLIT = random.random() * 10
 

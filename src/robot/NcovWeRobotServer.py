@@ -144,12 +144,12 @@ def text_reply(msg):
         msg.download(msg.fileName)
         # new_file = os.path.join(BASE_DIR, 'download_image/') + msg.fileName
         text_list = ocr(msg.fileName)
-        # 带有辟谣等字眼的信息直接返回
-        if check_identify(msg.text):
-            return
-        text_list = list(filter(lambda x: len(x) > 10, text_list))
         # 删除图片
         remove_image(msg.fileName)
+        # 带有辟谣等字眼的信息直接返回
+        if len(text_list) == 0 or check_identify(msg.text):
+            return
+        text_list = list(filter(lambda x: len(x) > 10, text_list))
         identify_news(text_list, itchat, msg['FromUserName'])
 
 def init_jieba():

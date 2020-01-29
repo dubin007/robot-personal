@@ -174,6 +174,10 @@ class testNcovWeRobot(unittest.TestCase):
         for i in range(20):
             print(get_random_tail())
 
+    def test_long_time_split(self):
+        for i in range(20):
+            print(get_random_long_time())
+
     def save_data_loop(self):
         while True:
             self.sp.re.set(SHOULD_UPDATE, 1)

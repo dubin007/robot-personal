@@ -11,11 +11,15 @@ import sys
 import pytesseract
 from PIL import Image
 from snownlp import SnowNLP
+
+from src.util.log import LogSupport
+
 curPath = os.path.abspath(os.path.dirname(__file__))
 rootPath = os.path.split(curPath)[0]
 BASE_PATH = os.path.split(rootPath)[0]
 sys.path.append(BASE_PATH)
 
+ls = LogSupport()
 class Image2Title:
     def __init__(self, topK=5):
         self.topK = topK
@@ -30,15 +34,21 @@ class Image2Title:
         return text
 
     def __call__(self, image_path):
-        print(image_path)
-        # assert not os.path.exists(image_path), "The image does not exist!"
-        image = Image.open(image_path)
-        text = pytesseract.image_to_string(image, lang='chi_sim')
-        text = self.__preprocessing(text)
-        s = SnowNLP(text)
-        topK_titles = s.summary(self.topK)
+        try:
+            # assert not os.path.exists(image_path), "The image does not exist!"
+            image = Image.open(image_path)
+            text = pytesseract.image_to_string(image, lang='chi_sim')
+            text = self.__preprocessing(text)
+            if len(text) > 0:
+                s = SnowNLP(text)
+                topK_titles = s.summary(self.topK)
+                return topK_titles
+            else:
+                return [text]
+        except BaseException as e:
+            ls.logging.exception(e)
+            return []
 
-        return topK_titles
 
 
 if __name__ == '__main__':
