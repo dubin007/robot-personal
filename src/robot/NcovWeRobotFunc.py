@@ -171,4 +171,6 @@ def do_ncov_update(conn, itchat, debug=True):
     except BaseException as e:
         ls.logging.error("Error in check ncov update-----")
         ls.logging.exception(e)
+def check_help(text):
+    return re.match('^help|帮助$', text) != None
 
