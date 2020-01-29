@@ -13,8 +13,8 @@ from src.ocr.TextSummary import get_text_summary
 from src.util.util import check_image, check_identify, remove_image
 from itchat.content import *
 from src.robot.NcovWeRobotFunc import *
-from src.util.constant import INFO_TAIL, INFO_TAIL_ALL, SEND_SPLIT, FOCUS_TAIL, BASE_DIR, HELP_CONTENT, \
-    GROUP_CONTENT_HELP, SEND_SPLIT_SHORT
+from src.util.constant import INFO_TAIL, INFO_TAIL_ALL, FOCUS_TAIL, BASE_DIR, HELP_CONTENT, \
+    GROUP_CONTENT_HELP, ONLINE_TEXT, FILE_HELPER
 from src.util.redis_config import connect_redis
 from src.robot.NcovGroupRobot import *
 
@@ -39,14 +39,14 @@ def text_reply(msg):
             ls.logging.info('用户%s: %s %s' % (msg.user.UserName, succ_text, failed_text))
             itchat.send('%s %s' % (succ_text, failed_text), toUserName=msg.user.UserName)
             if len(succ) > 0:
-                time.sleep(SEND_SPLIT)
+                time.sleep(get_random_split())
                 itchat.send(get_ncvo_info_with_city(conn, succ), toUserName=msg.user.UserName)
                 area = succ[0]
                 if area != '全国' and area != '中国':
-                    time.sleep(SEND_SPLIT)
+                    time.sleep(get_random_split())
                     itchat.send(INFO_TAIL.format(area, area), toUserName=msg.user.UserName)
                 else:
-                    time.sleep(SEND_SPLIT)
+                    time.sleep(get_random_split())
                     itchat.send(INFO_TAIL_ALL, toUserName=msg.user.UserName)
         elif check_whether_unregist(msg.text):
             succ, failed = user_unsubscribe_multi(conn, msg.user.UserName, msg.text, jieba)
@@ -59,7 +59,7 @@ def text_reply(msg):
             ls.logging.info('用户%s: %s %s' % (msg.user.UserName, succ_text, failed_text))
             itchat.send('%s %s' % (succ_text, failed_text), toUserName=msg.user.UserName)
 
-        elif msg['ToUserName'] == 'filehelper':
+        elif msg['ToUserName'] == FILE_HELPER:
             if check_whether_identify(msg.text):
                 succ, failed = add_identify_group(conn, itchat, msg.text)
                 succ_text =''
@@ -69,10 +69,10 @@ def text_reply(msg):
                 else:
                     failed_text = '关注{}失败，请检查该群名称是否正确'.format("，".join(failed))
                 ls.logging.info('用户%s: %s %s' % (msg.user.UserName, succ_text, failed_text))
-                itchat.send('%s %s' % (succ_text, failed_text), toUserName='filehelper')
+                itchat.send('%s %s' % (succ_text, failed_text), toUserName=FILE_HELPER)
                 if len(succ) > 0:
-                    time.sleep(SEND_SPLIT_SHORT)
-                    itchat.send(FOCUS_TAIL, toUserName='filehelper')
+                    time.sleep(get_random_split_short())
+                    itchat.send(FOCUS_TAIL, toUserName=FILE_HELPER)
             elif check_whether_unidentify(msg.text):
                 succ, failed = cancel_identify_group(conn, itchat, msg.text)
                 succ_text = ''
@@ -82,14 +82,14 @@ def text_reply(msg):
                 else:
                     failed_text = '停止鉴别{}等群的谣言失败，请检查该群名称是否正确'.format("，".join(failed))
                 ls.logging.info('用户%s: %s %s' % (msg.user.UserName, succ_text, failed_text))
-                itchat.send('%s %s' % (succ_text, failed_text), toUserName='filehelper')
+                itchat.send('%s %s' % (succ_text, failed_text), toUserName=FILE_HELPER)
             elif check_help(msg.text):
-                time.sleep(SEND_SPLIT_SHORT)
+                time.sleep(get_random_split_short())
                 itchat.send(HELP_CONTENT, toUserName='filehelper')
             elif msg.text.lower() == 'cx':
-                time.sleep(SEND_SPLIT_SHORT)
+                time.sleep(get_random_split_short())
                 groups = list(conn.smembers(USER_FOCUS_GROUP_NAME))
-                itchat.send(GROUP_CONTENT_HELP.format("，".join(groups)), toUserName='filehelper')
+                itchat.send(GROUP_CONTENT_HELP.format("，".join(groups)), toUserName=FILE_HELPER)
     except BaseException as e:
         ls.logging.exception(e)
 
@@ -171,7 +171,7 @@ def start_server():
     ls.logging.info("begin to start ncov update")
     p2 = threading.Thread(target=do_ncov_update, args=[conn, itchat, False])
     p2.start()
-    itchat.send('Hello, 自动机器人又上线啦', toUserName='filehelper')
+    itchat.send(ONLINE_TEXT, toUserName=FILE_HELPER)
     restore_group(conn, itchat)
     itchat.run(True)
 
