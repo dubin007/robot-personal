@@ -8,9 +8,10 @@ Copyright © 2018 Wang Han. SCU. All Rights Reserved.
 import os
 import sys
 
-import pytesseract
-from PIL import Image
-from snownlp import SnowNLP
+from cnocr import CnOcr
+ocr = CnOcr() 
+#from PIL import Image
+#from snownlp import SnowNLP
 
 from src.util.log import LogSupport
 
@@ -36,8 +37,11 @@ class Image2Title:
     def __call__(self, image_path):
         try:
             # assert not os.path.exists(image_path), "The image does not exist!"
-            image = Image.open(image_path)
-            text = pytesseract.image_to_string(image, lang='chi_sim')
+            #image = Image.open(image_path)
+            #text = pytesseract.image_to_string(image, lang='chi_sim')
+            # cnocr的中文OCR识别效果显著更好
+            tmp = ocr.ocr(image_path) #中间结果, 形如 ['兼', '葭'], ['先', '秦', ':', '佚', '名']
+            text=''.join( [''.join(line) for line in tmp] )
             text = self.__preprocessing(text)
             if len(text) > 0:
                 s = SnowNLP(text)
