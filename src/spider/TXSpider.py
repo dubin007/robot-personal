@@ -24,7 +24,13 @@ class TXSpider():
         """
         try:
             data = self.get_raw_real_time_info()
-            now_data = self.change_raw_data_format_new(data)
+            chinaTotal = data['chinaTotal']
+            # 腾讯areaTree中的全国数据与chinaTotal不一致，以chinaTotal为准
+            now_data = self.change_raw_data_format_new(data['areaTree'])
+            now_data['全国']['confirm'] = int(chinaTotal['confirm'])
+            now_data['全国']['suspect'] = int(chinaTotal['suspect'])
+            now_data['全国']['dead'] = int(chinaTotal['dead'])
+            now_data['全国']['heal'] = int(chinaTotal['heal'])
             # 保存所有的地区名
             self.get_all_area(now_data)
             # 加载上一次最新的数据
@@ -133,7 +139,7 @@ class TXSpider():
             self.log.logging.error("Failed to get info")
             raise ConnectionError
         content = json.loads(res.content.decode("utf-8"))
-        data = json.loads(content['data'])['areaTree']
+        data = json.loads(content['data'])
         return data
 
     def change_raw_data_format_new(self, data):
