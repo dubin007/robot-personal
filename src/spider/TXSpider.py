@@ -1,10 +1,16 @@
+import os
+
 import requests
 from urllib import parse
-from src.util.constant import ALL_AREA_KEY, AREA_TAIL, SHOULD_UPDATE, STATE_NCOV_INFO, UPDATE_CITY, TIME_SPLIT
+from src.util.constant import ALL_AREA_KEY, AREA_TAIL, SHOULD_UPDATE, STATE_NCOV_INFO, UPDATE_CITY, TIME_SPLIT, \
+    USE_REDIS, BASE_DIR, DATA_DIR
 from src.util.log import LogSupport
 import json
 import re
 from src.util.redis_config import connect_redis, save_json_info, load_last_info, save_json_info_as_key
+from src.util.sqlite_config import SQLiteConnect
+from src.util.util import check_dir_exist
+
 
 class TXSpider():
     def __init__(self, debug=True):
@@ -16,6 +22,11 @@ class TXSpider():
         self.log = LogSupport()
         self.re = connect_redis()
         self.debug = debug
+        self.sqlc = SQLiteConnect(BASE_DIR + "sqlite.db")
+
+    def check_dirs(self):
+        check_dir_exist(DATA_DIR)
+        check_dir_exist(os.path.join(BASE_DIR + "/download_image/"))
 
     def main(self):
         """
@@ -32,21 +43,25 @@ class TXSpider():
             now_data['全国']['dead'] = int(chinaTotal['dead'])
             now_data['全国']['heal'] = int(chinaTotal['heal'])
             # 保存所有的地区名
-            self.get_all_area(now_data)
+            self.save_all_area(now_data)
             # 加载上一次最新的数据
             last_data = load_last_info(self.re)
             if not last_data:
                 save_json_info(self.re, STATE_NCOV_INFO, now_data)
                 last_data = now_data
             update_city = self.parse_increase_info(now_data, last_data)
-            should_update = self.re.get(SHOULD_UPDATE)
+            if USE_REDIS:
+                should_update = self.re.get(SHOULD_UPDATE)
+                should_update = 0 if should_update == None else should_update
+            else:
+                should_update = self.sqlc.get_update_flag()
             # 如果数据有更新，则保存新数据和更新的数据
             if len(update_city) > 0:
                 save_json_info(self.re, STATE_NCOV_INFO, now_data)
-                if should_update != None and should_update == '0':
+                if should_update == 0:
                     self.re.set(SHOULD_UPDATE, 1)
                 # 如果上一次的数据还没推出去，要先合并新增数据
-                elif should_update == '1':
+                elif should_update == 1:
                     old_update_city = json.loads(self.re.get(UPDATE_CITY))
                     update_city = self.merge_update_city(old_city_list=old_update_city, new_city_list=update_city)
                 save_json_info_as_key(self.re, UPDATE_CITY, update_city)
@@ -101,8 +116,6 @@ class TXSpider():
         state_dict['city'] = '全国'
         return {'全国': state_dict}
 
-
-
     def get_tx_header(self):
         return {
             'host': 'view.inews.qq.com',
@@ -122,10 +135,6 @@ class TXSpider():
             'name': 'disease_h5'
         }
         return base_url + parse.urlencode(params)
-
-    def get_disease_h5_url(self):
-
-        pass
 
     def get_raw_real_time_info(self):
         """
@@ -178,17 +187,27 @@ class TXSpider():
                     item['city'] = item['area']
         return data
 
-    def get_all_area(self, data_dict):
+    def save_all_area(self, data_dict):
         """
         保存所有地区的名称，供分词用
         :param data_dict:
         :return:
         """
-        all_area = data_dict.keys()
-        for area in all_area:
-            short = re.subn(AREA_TAIL, '', area)[0]
-            self.re.sadd(ALL_AREA_KEY, short)
-            self.re.sadd(ALL_AREA_KEY, area)
+        all_area = set(data_dict.keys())
+        if USE_REDIS:
+            for area in all_area:
+                short = re.subn(AREA_TAIL, '', area)[0]
+                self.re.sadd(ALL_AREA_KEY, short)
+                self.re.sadd(ALL_AREA_KEY, area)
+        else:
+            now_area = set(self.sqlc.get_all_area())
+            new_area = all_area.difference(now_area)
+            for area in new_area:
+                short = re.subn(AREA_TAIL, '', area)[0]
+                if short != area and len(short) >= 2:
+                    self.sqlc.add_area_list(short)
+                self.sqlc.add_area_list(area)
+            pass
 
     def parse_increase_info(self, now_data, last_data):
         # 计算有更新的城市/省份/国家

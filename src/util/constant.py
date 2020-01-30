@@ -10,6 +10,7 @@ sys.path.append(BASE_PATH)
 #### Redis Key Begin
 # 每个城市单独保存一个key做集合，订阅的用户在集合中
 
+USE_REDIS = False
 # 当前所有疫情数据，类型：list
 STATE_NCOV_INFO = 'state_ncov_info'
 # 所有有疫情的城市集合
@@ -35,6 +36,7 @@ UN_REGIST_PATTERN2 = '^取关|取消(关注)?'
 ### REG PAttern End
 
 BASE_DIR = BASE_PATH + '/resource/'
+DATA_DIR = BASE_DIR + '/data/'
 # for localhost redis
 REDIS_HOST = '127.0.0.1'
 ## for docker redis

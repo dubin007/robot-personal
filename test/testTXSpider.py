@@ -3,7 +3,8 @@ import unittest
 from src.spider.TXSpider import TXSpider
 import re
 
-from src.util.constant import AREA_TAIL
+from src.util.constant import AREA_TAIL, ALL_AREA_KEY
+from src.util.redis_config import connect_redis
 
 
 class testNcovWeRobot(unittest.TestCase):
@@ -107,3 +108,7 @@ class testNcovWeRobot(unittest.TestCase):
         data = json.loads(data['data'])
         update_city = self.sp.change_raw_data_format_new(data['areaTree'])
         print(update_city)
+
+    def test_get_all_area(self):
+        conn = connect_redis()
+        all_area = set(conn.smembers(ALL_AREA_KEY))

@@ -3,7 +3,7 @@ import re
 import time
 
 from src.util.constant import ALL_AREA_KEY, AREA_TAIL, FIRST_NCOV_INFO, NO_NCOV_INFO, ORDER_KEY, UN_REGIST_PATTERN, \
-    UN_REGIST_PATTERN2, SHOULD_UPDATE, UPDATE_CITY
+    UN_REGIST_PATTERN2, SHOULD_UPDATE, UPDATE_CITY, USE_REDIS, DATA_DIR
 from src.util.log import LogSupport
 from src.util.redis_config import load_last_info
 import json
@@ -23,7 +23,10 @@ def user_subscribe(conn, user, area, jieba):
     :param jieba: jieba分词的对象，从外部传入是为了加载额外的词库
     :return:
     """
-    all_area = set(conn.smembers(ALL_AREA_KEY))
+    if USE_REDIS:
+        all_area = set(conn.smembers(ALL_AREA_KEY))
+    else:
+        all_area = set(conn.get_all_area())
     if len(all_area) == 0:
         ls.logging.error("all area key 为空")
     # 去掉订阅两字
@@ -34,19 +37,15 @@ def user_subscribe(conn, user, area, jieba):
     if area == '朝阳':
         return succ_subscribe, ['朝阳']
     area_list = jieba.cut(area)
-
     area_list = list(filter(lambda x: len(x) > 1, area_list))
-
     tails = ['省', '市', '区', '县','州','自治区', '自治州', '']
 
     for ar in area_list:
         if ar == '朝阳市' or ar == '朝阳区':
-            conn.sadd(ar, user)
-            conn.sadd(ORDER_KEY, ar)
+            add_order_key(conn, ar, user)
             succ_subscribe.append(ar)
         elif ar == '中国' or ar == '全国':
-            conn.sadd('全国', user)
-            conn.sadd(ORDER_KEY, '全国')
+            add_order_key(conn, '全国', user)
             succ_subscribe.append('全国')
         else:
             ar = re.subn(AREA_TAIL, '', ar)[0]
@@ -54,8 +53,7 @@ def user_subscribe(conn, user, area, jieba):
             for tail in tails:
                 if ar + tail in all_area:
                     # 使该地区的键值唯一，以腾讯新闻中的名称为准，比如湖北省和湖北都使用湖北，而涪陵区和涪陵都使用涪陵区
-                    conn.sadd(ar + tail, user)
-                    conn.sadd(ORDER_KEY, ar + tail)
+                    add_order_key(conn, ar + tail, user)
                     succ_subscribe.append(ar + tail)
                     flag =True
                     break
@@ -63,12 +61,25 @@ def user_subscribe(conn, user, area, jieba):
                 failed_subscribe.append(ar)
     return succ_subscribe, failed_subscribe
 
+def add_order_key(conn, area, user):
+    if USE_REDIS:
+        conn.sadd(area, user)
+        conn.sadd(ORDER_KEY, area)
+    else:
+        conn.save_subscription(user, area)
+
 def check_whether_unregist(text):
     return re.match(UN_REGIST_PATTERN, text) != None
 
-def user_unsubscribe_multi(conn, user, area, jieba):
+def get_all_order_area(conn):
+    if USE_REDIS:
+        all_order_area = conn.smembers(ORDER_KEY)
+    else:
+        all_order_area = []
+
+def user_unsubscribe_multi_redis(conn, user, area, jieba):
     """
-    取消订阅
+    取消订阅 （使用redis的情况）
     :param conn:
     :param user:
     :param area:
@@ -108,8 +119,32 @@ def user_unsubscribe_multi(conn, user, area, jieba):
                     break
             if not flag:
                 unsubscribe_list_fail.append(ar)
-
     return unsubscribe_list, unsubscribe_list_fail
+
+def user_unsubscribe_multi_sqlite(conn, user, area, jieba):
+    """
+    取消订阅（使用sqlite的情况）
+    :param conn:
+    :param user:
+    :param area:
+    :param jieba:
+    :return:
+    """
+    unsubscribe_list = []
+    unsubscribe_list_fail = []
+    if area.find("全部") != -1:
+        conn.cancel_all_subscription(user)
+        unsubscribe_list.append('全部')
+    else:
+        area_list = jieba.cut(area)
+        for area in area_list:
+            res = conn.cancel_subscription(user, area)
+            if res > 0:
+                unsubscribe_list.append(area)
+            else:
+                unsubscribe_list_fail.append(area)
+    return unsubscribe_list, unsubscribe_list_fail
+
 
 def get_ncvo_info_with_city(conn, citys):
     """
@@ -120,6 +155,8 @@ def get_ncvo_info_with_city(conn, citys):
     """
     last = load_last_info(conn)
     ncov = []
+    if not last:
+        return NO_NCOV_INFO.format(", ".join(citys))
     for city in citys:
         if city in last:
             info = last[city]
@@ -148,17 +185,19 @@ def do_ncov_update(conn, itchat, debug=True):
     ls.logging.info("thread do ncov update info start success-----")
     try:
         while True:
-            should_update = conn.get(SHOULD_UPDATE)
-            if should_update == '1':
-                update_city = conn.get(UPDATE_CITY)
-                conn.set(SHOULD_UPDATE, 0)
+            if USE_REDIS:
+                should_update = conn.get(SHOULD_UPDATE)
+                should_update = 0 if should_update == None else should_update
+            else:
+                should_update = conn.get_update_flag()
+            if should_update == 1:
+                update_city = get_update_city(conn)
                 if not update_city:
                     ls.logging.warning("-No update city info")
                     continue
-                update_city = json.loads(update_city)
                 for city in update_city:
                     push_info = construct_push_info(city)
-                    subscribe_user = conn.smembers(city['city'])
+                    subscribe_user = get_members_by_city(conn, city['city'])
                     ls.logging.info("begin to send info...")
                     for user in subscribe_user:
                         try:
@@ -177,8 +216,32 @@ def do_ncov_update(conn, itchat, debug=True):
         ls.logging.error("Error in check ncov update-----")
         ls.logging.exception(e)
 
-def construct_push_info(city):
+def get_update_city(conn):
+    if USE_REDIS:
+        update_city = conn.get(UPDATE_CITY)
+        conn.set(SHOULD_UPDATE, 0)
+        if update_city != None:
+            update_city = json.loads(update_city)
+    else:
+        try:
+            with open(DATA_DIR + UPDATE_CITY +".json", 'r', encoding='utf-8') as r:
+                update_city = json.load(r)
+            conn.do_update_flag(0)
+        except BaseException as e:
+            ls.logging.error("no update city, but flag is 1")
+            ls.logging.exception(e)
+            update_city = None
+    return update_city
 
+def get_members_by_city(conn, city):
+    if USE_REDIS:
+        subscribe_user = set(conn.smembers(city))
+    else:
+        subscribe_user = set(conn.get_subscribed_users(city))
+    return subscribe_user
+
+
+def construct_push_info(city):
     area = '{}有数据更新，新增'.format(city['city'])
     n_confirm = '确诊病例{}例'.format(city['n_confirm']) if city['n_confirm'] > 0 else ''
     n_suspect = '疑似病例{}例'.format(city['n_suspect']) if city['n_suspect'] > 0 else ''

@@ -1,5 +1,3 @@
-import json
-import time
 import itchat
 import os
 import sys
@@ -27,6 +25,7 @@ def text_reply(msg):
     try:
         if msg['FromUserName'] == itchat.originInstance.storageClass.userName and msg['ToUserName'] != 'filehelper':
             return
+        nickname = itchat.originInstance.storageClass.nickName
         if check_whether_register(msg.text):
             succ, failed = user_subscribe(conn, msg.user.UserName, msg.text, jieba)
             if len(failed) == 1 and failed[0] == '朝阳':
@@ -52,7 +51,10 @@ def text_reply(msg):
                     time.sleep(get_random_split())
                     itchat.send(INFO_TAIL_ALL + get_random_tail(), toUserName=msg.user.UserName)
         elif check_whether_unregist(msg.text):
-            succ, failed = user_unsubscribe_multi(conn, msg.user.UserName, msg.text, jieba)
+            if USE_REDIS:
+                succ, failed = user_unsubscribe_multi_redis(conn, msg.user.UserName, msg.text, jieba)
+            else:
+                succ, failed = user_unsubscribe_multi_sqlite(conn, msg.user.UserName, msg.text, jieba)
             succ_text = ''
             if len(succ) > 0:
                 succ_text = '成功取消{}的疫情信息订阅'.format("，".join(succ))
@@ -61,10 +63,9 @@ def text_reply(msg):
                 failed_text = '取消{}的疫情信息订阅失败，您好像没有订阅该地区信息或者地区名称错误'.format("，".join(failed))
             ls.logging.info('用户%s: %s %s' % (msg.user.UserName, succ_text, failed_text))
             itchat.send('%s %s' % (succ_text, failed_text), toUserName=msg.user.UserName)
-
         elif msg['ToUserName'] == FILE_HELPER:
             if check_whether_identify(msg.text):
-                succ, failed = add_identify_group(conn, itchat, msg.text)
+                succ, failed = add_identify_group(conn, itchat, nickname, msg.text)
                 succ_text =''
                 failed_text = ''
                 if len(succ) > 0:
@@ -77,7 +78,7 @@ def text_reply(msg):
                     time.sleep(get_random_split_short())
                     itchat.send(FOCUS_TAIL, toUserName=FILE_HELPER)
             elif check_whether_unidentify(msg.text):
-                succ, failed = cancel_identify_group(conn, itchat, msg.text)
+                succ, failed = cancel_identify_group(conn, itchat, nickname, msg.text)
                 succ_text = ''
                 failed_text = ''
                 if len(succ) > 0:
@@ -91,7 +92,10 @@ def text_reply(msg):
                 itchat.send(HELP_CONTENT, toUserName='filehelper')
             elif msg.text.lower() == 'cx':
                 time.sleep(get_random_split_short())
-                groups = list(conn.smembers(USER_FOCUS_GROUP_NAME))
+                if USE_REDIS:
+                    groups = list(conn.smembers(USER_FOCUS_GROUP_NAME))
+                else:
+                    groups = conn.query_all_group_for_user(nickname)
                 itchat.send(GROUP_CONTENT_HELP.format("，".join(groups)), toUserName=FILE_HELPER)
     except BaseException as e:
         ls.logging.exception(e)
@@ -104,11 +108,11 @@ def text_reply(msg):
     # 筛掉过短的长文和重复字段过多的长文
     if len(msg.text) < 50 or len(set(msg.text)) < 20:
         return
-    focus_group = conn.smembers(USER_FOCUS_GROUP)
-    if msg['FromUserName'] not in focus_group:
-        return
     # 带有辟谣等字眼的信息直接返回
     if check_identify(msg.text):
+        return
+    # 判断是在否在关注的群列表里
+    if not judge_whether_foucs_group(conn, itchat.originInstance.storageClass.nickName, msg['FromUserName']):
         return
     # 获取文字摘要
     text_list = get_text_summary(msg.text, topK=2)
@@ -122,7 +126,7 @@ def text_reply(msg):
     if check_identify(msg.text):
         return
     # 判断是在否在关注的群列表里
-    if not conn.sismember(USER_FOCUS_GROUP, msg['FromUserName']):
+    if not judge_whether_foucs_group(conn, itchat.originInstance.storageClass.nickName, msg['FromUserName']):
         return
     # 鉴别
     identify_news([msg.text], itchat, msg['FromUserName'])
@@ -140,9 +144,8 @@ def text_reply(msg):
 def text_reply(msg):
     if msg['FromUserName'] == itchat.originInstance.storageClass.userName and msg['ToUserName'] != 'filehelper':
         return
-    if not conn.sismember(USER_FOCUS_GROUP, msg['FromUserName']):
+    if not judge_whether_foucs_group(conn, itchat.originInstance.storageClass.nickName, msg['FromUserName']):
         return
-
     if check_image(msg.fileName):
         msg.download(msg.fileName)
         # new_file = os.path.join(BASE_DIR, 'download_image/') + msg.fileName
@@ -155,19 +158,25 @@ def text_reply(msg):
         text_list = list(filter(lambda x: len(x) > 10, text_list))
         identify_news(text_list, itchat, msg['FromUserName'])
 
+def judge_whether_foucs_group(conn, user, group):
+    # 判断是在否在关注的群列表里
+    if USE_REDIS:
+        return conn.sismember(USER_FOCUS_GROUP, group)
+    else:
+        return group in set(conn.query_all_group_id_for_user(user))
+
 def init_jieba():
-    all_area = set(conn.smembers(ALL_AREA_KEY))
+    all_area = conn.get_all_area()
     if len(all_area) == 0:
         ls.logging.error("尚无地区信息")
-
     for words in all_area:
         jieba.add_word(words)
     return jieba
 
 def start_server():
     # 在不同的终端上，需要调整CMDQR的值
-    itchat.auto_login(True, enableCmdQR=2)
-    # itchat.auto_login(False)
+    # itchat.auto_login(True, enableCmdQR=2)
+    itchat.auto_login(True)
     ls.logging.info("begin to start tx spider")
     p1 = threading.Thread(target=start_tx_spider)
     p1.start()
@@ -175,12 +184,16 @@ def start_server():
     p2 = threading.Thread(target=do_ncov_update, args=[conn, itchat, False])
     p2.start()
     itchat.send(ONLINE_TEXT, toUserName=FILE_HELPER)
-    restore_group(conn, itchat)
+    myself = itchat.search_friends()
+    restore_group(conn, itchat, myself['NickName'])
     itchat.run(True)
 
-ocr = Image2Title(topK=5)
-conn = connect_redis()
-jieba = init_jieba()
 
 if __name__ == '__main__':
+    ocr = Image2Title(topK=5)
+    if USE_REDIS:
+        conn = connect_redis()
+    else:
+        conn = SQLiteConnect(BASE_DIR + 'sqlite.db')
+    jieba = init_jieba()
     start_server()
