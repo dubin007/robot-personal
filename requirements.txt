@@ -1,5 +1,4 @@
 requests
-pandas
 itchat
 redis
 jieba

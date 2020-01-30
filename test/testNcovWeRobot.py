@@ -113,7 +113,7 @@ class testNcovWeRobot(unittest.TestCase):
     def test_user_unsubscribe(self):
         conn = connect_redis()
         # 完成数据转化并更新数据库
-        self.sp.change_raw_data_format(self.data2)
+        self.sp.change_raw_data_format_new(self.data2)
         user_subscribe(conn, 'test', '订阅湖北', jieba)
         succ, failed = user_unsubscribe_multi(conn, 'test', '取消关注湖北', jieba)
         assert succ == ['湖北']
@@ -128,8 +128,8 @@ class testNcovWeRobot(unittest.TestCase):
 
     def test_do_ncov_update(self):
         # 完成数据转化并更新数据库
-        last = self.sp.change_raw_data_format(self.data1)
-        now = self.sp.change_raw_data_format(self.data2)
+        last = self.sp.change_raw_data_format_new(self.data1)
+        now = self.sp.change_raw_data_format_new(self.data2)
         update_city = self.sp.parse_increase_info(now, last)
         self.sp.re.set(SHOULD_UPDATE, 1)
         save_json_info_as_key(self.sp.re, UPDATE_CITY, update_city)

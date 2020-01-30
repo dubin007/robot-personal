@@ -24,5 +24,6 @@ RUN apt-get update --allow-unauthenticated
 
 COPY requirements.txt /ncov_robot
 RUN pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements.txt
+COPY cnocr-models-v1.0.0.zip /root/.cnocr/
 COPY . /ncov_robot
 CMD python src/robot/NcovWeRobotServer.py
