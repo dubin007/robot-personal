@@ -11,7 +11,7 @@ import sys
 from cnocr import CnOcr
 ocr = CnOcr() 
 #from PIL import Image
-#from snownlp import SnowNLP
+from snownlp import SnowNLP
 
 from src.util.log import LogSupport
 

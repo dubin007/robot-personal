@@ -3,7 +3,6 @@ from urllib import parse
 from src.util.constant import ALL_AREA_KEY, AREA_TAIL, SHOULD_UPDATE, STATE_NCOV_INFO, UPDATE_CITY, TIME_SPLIT
 from src.util.log import LogSupport
 import json
-import pandas as pd
 import re
 from src.util.redis_config import connect_redis, save_json_info, load_last_info, save_json_info_as_key
 
@@ -136,37 +135,6 @@ class TXSpider():
         content = json.loads(res.content.decode("utf-8"))
         data = json.loads(content['data'])['areaTree']
         return data
-
-    def change_raw_data_format(self, data):
-        """
-        将原始的json_list形式的数据转为dict, 填充缺失值并按省份、国家统计数据
-        :param data:
-        :return:
-        """
-        data_dict = {}
-        for item in data:
-            if item['city'] == '':
-                if item['area'] == '':
-                    item['city'] = item['country']
-                    item['area'] = item['country']
-                else:
-                    item['city'] = item['area']
-            data_dict[item['city']] = item
-        # 统计各省份情况
-        data_df = pd.DataFrame(data)
-        data_province = data_df.loc[:, ['area', 'confirm', 'suspect', 'dead', 'heal']]
-        data_province = data_province.groupby(by='area').sum().reset_index()
-        data_province.sort_values(by='confirm', ascending=False, inplace=True)
-        province_json = json.loads(data_province.to_json(orient='records', force_ascii=False))
-        province_json = self.fill_unknow(province_json)
-        province_dict = {x['area']: x for x in province_json}
-        # 合并数据并保存
-        state_dict = self.get_state_all()
-        data_dict.update(province_dict)
-        data_dict.update(state_dict)
-
-        self.log.logging.info("update data success---")
-        return data_dict
 
     def change_raw_data_format_new(self, data):
         data_dict = {}
