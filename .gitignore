@@ -9,3 +9,4 @@
 sqlite.db
 *.DS_Store
 !cnocr-models-v1.0.0.zip
+resource/data/*
