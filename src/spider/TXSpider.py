@@ -40,6 +40,7 @@ class TXSpider():
                 save_json_info(self.re, STATE_NCOV_INFO, now_data)
                 if should_update != None and should_update == '0':
                     self.re.set(SHOULD_UPDATE, 1)
+                # 如果上一次的数据还没推出去，要先合并新增数据
                 elif should_update == '1':
                     old_update_city = json.loads(self.re.get(UPDATE_CITY))
                     update_city = self.merge_update_city(old_city_list=old_update_city, new_city_list=update_city)
@@ -59,12 +60,8 @@ class TXSpider():
 
         for city in new_city_list:
             if city['city'] in old_city:
-                city['confirm'] += old_city[city['city']]['confirm']
                 city['n_confirm'] += old_city[city['city']]['n_confirm']
-                city['suspect'] += old_city[city['city']]['suspect']
                 city['n_suspect'] += old_city[city['city']]['n_suspect']
-                city['dead'] += old_city[city['city']]['dead']
-                city['heal'] += old_city[city['city']]['heal']
                 city['n_dead'] += old_city[city['city']]['n_dead']
                 city['n_heal'] += old_city[city['city']]['n_heal']
                 final_result.append(city)
