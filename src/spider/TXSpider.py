@@ -32,10 +32,15 @@ class TXSpider():
                 save_json_info(self.re, STATE_NCOV_INFO, now_data)
                 last_data = now_data
             update_city = self.parse_increase_info(now_data, last_data)
+            should_update = self.re.get(SHOULD_UPDATE)
             # 如果数据有更新，则保存新数据和更新的数据
             if len(update_city) > 0:
-                self.re.set(SHOULD_UPDATE, 1)
                 save_json_info(self.re, STATE_NCOV_INFO, now_data)
+                if should_update != None and should_update == '0':
+                    self.re.set(SHOULD_UPDATE, 1)
+                elif should_update == '1':
+                    old_update_city = json.loads(self.re.get(UPDATE_CITY))
+                    update_city = self.merge_update_city(old_city_list=old_update_city, new_city_list=update_city)
                 save_json_info_as_key(self.re, UPDATE_CITY, update_city)
                 self.log.logging.info("set update city {}".format(json.dumps(update_city)))
             else:
@@ -43,6 +48,30 @@ class TXSpider():
                 self.log.logging.info("no update city")
         except BaseException as e:
             self.log.logging.exception(e)
+
+    def merge_update_city(self, new_city_list, old_city_list):
+        final_result = []
+        old_city = {x['city']: x for x in old_city_list}
+        new_city = {x['city']: x for x in new_city_list}
+
+        for city in new_city_list:
+            if city['city'] in old_city:
+                city['confirm'] += old_city[city['city']]['confirm']
+                city['n_confirm'] += old_city[city['city']]['n_confirm']
+                city['suspect'] += old_city[city['city']]['suspect']
+                city['n_suspect'] += old_city[city['city']]['n_suspect']
+                city['dead'] += old_city[city['city']]['dead']
+                city['heal'] += old_city[city['city']]['heal']
+                city['n_dead'] += old_city[city['city']]['n_dead']
+                city['n_heal'] += old_city[city['city']]['n_heal']
+                final_result.append(city)
+            else:
+                final_result.append(city)
+
+        for city in old_city_list:
+            if city['city'] not in new_city:
+                final_result.append(city)
+        return final_result
 
     def get_state_all_url(self):
         url = 'https://view.inews.qq.com/g2/getOnsInfo?name=wuwei_ww_global_vars'
