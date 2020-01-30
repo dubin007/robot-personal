@@ -9,10 +9,9 @@ import os
 import sys
 
 from cnocr import CnOcr
-ocr = CnOcr() 
+
 #from PIL import Image
 from snownlp import SnowNLP
-
 from src.util.log import LogSupport
 
 curPath = os.path.abspath(os.path.dirname(__file__))
@@ -59,9 +58,9 @@ if __name__ == '__main__':
     from urllib.request import quote
     import requests
     from src.util.parse_jsonp import loads_jsonp
-
-    ocr = Image2Title()
-    topK_titles = ocr("/Users/maicius/code/NcovWeRobot/resource/download_image/200128-201021.png")
+    ocr = CnOcr()
+    ocr1 = Image2Title()
+    topK_titles = ocr1("/Users/maicius/code/NcovWeRobot/resource/download_image/200128-201021.png")
     for idx, title in enumerate(topK_titles):
         print("title No.{}: {}".format(idx, title))
         url = "https://vp.fact.qq.com/searchresult?title={}&num=0&_=1580200136791&callback=jsonp1".format(quote(title))
