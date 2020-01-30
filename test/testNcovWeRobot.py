@@ -111,19 +111,23 @@ class testNcovWeRobot(unittest.TestCase):
         assert succ == ['湖北']
 
     def test_user_unsubscribe(self):
+        """
+        因数据格式已经改变，该测试已废弃
+        :return:
+        """
         conn = connect_redis()
         # 完成数据转化并更新数据库
         self.sp.change_raw_data_format_new(self.data2)
         user_subscribe(conn, 'test', '订阅湖北', jieba)
-        succ, failed = user_unsubscribe_multi(conn, 'test', '取消关注湖北', jieba)
+        succ, failed = user_unsubscribe_multi_redis(conn, 'test', '取消关注湖北', jieba)
         assert succ == ['湖北']
         succ, failed = user_subscribe(conn, 'test', '订阅湖北重庆', jieba)
         assert succ == ['湖北', '重庆']
-        succ, failed = user_unsubscribe_multi(conn, 'test', '取消重庆市', jieba)
+        succ, failed = user_unsubscribe_multi_redis(conn, 'test', '取消重庆市', jieba)
         assert succ == ['重庆']
-        succ, failed = user_unsubscribe_multi(conn, 'test', '取关全部', jieba)
+        succ, failed = user_unsubscribe_multi_redis(conn, 'test', '取关全部', jieba)
         assert succ == ['全部']
-        succ, failed = user_unsubscribe_multi(conn, 'test', '取消湖南', jieba)
+        succ, failed = user_unsubscribe_multi_redis(conn, 'test', '取消湖南', jieba)
         assert succ == [] and failed == ['湖南']
 
     def test_do_ncov_update(self):
@@ -177,7 +181,7 @@ class testNcovWeRobot(unittest.TestCase):
         for i in range(20):
             print(get_random_long_time())
 
-    def save_data_loop(self):
+    def test_save_data_loop(self):
         while True:
             self.sp.re.set(SHOULD_UPDATE, 1)
             save_json_info_as_key(self.sp.re, UPDATE_CITY, self.update_city)

@@ -179,6 +179,19 @@ class SQLiteConnect:
         result = result_proxy.fetchall()
         return [x[3] for x in result]
 
+    def query_all_group_id_for_user(self, uid):
+        """
+        根据id查询该用户所有辟谣的群
+        :param uid:
+        :return:
+        """
+        query = db.select([self.group_name]).where(
+            self.group_name.columns.uid == uid,
+        )
+        result_proxy = self.conn.execute(query)
+        result = result_proxy.fetchall()
+        return [x[2] for x in result]
+
     def cancel_group_for_user(self, uid, gname):
         """
         根据群和uid取消辟谣

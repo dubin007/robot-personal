@@ -2,7 +2,7 @@ import os
 import random
 import re
 
-from src.util.constant import INFO_TAILS
+from src.util.constant import INFO_TAILS, USE_REDIS, SHOULD_UPDATE
 
 
 def move_image(img_path, new_img_path):
@@ -28,3 +28,11 @@ def get_random_split_short():
 
 def get_random_long_time():
     return random.random() * 60 * 60
+
+def check_should_update(conn):
+    if USE_REDIS:
+        should_update = conn.get(SHOULD_UPDATE)
+        should_update = 0 if should_update == None else should_update
+    else:
+        should_update = conn.get_update_flag()
+    return should_update
