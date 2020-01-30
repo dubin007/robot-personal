@@ -1,12 +1,15 @@
+import os
+
 import requests
 from urllib import parse
 from src.util.constant import ALL_AREA_KEY, AREA_TAIL, SHOULD_UPDATE, STATE_NCOV_INFO, UPDATE_CITY, TIME_SPLIT, \
-    USE_REDIS, BASE_DIR
+    USE_REDIS, BASE_DIR, DATA_DIR
 from src.util.log import LogSupport
 import json
 import re
 from src.util.redis_config import connect_redis, save_json_info, load_last_info, save_json_info_as_key
 from src.util.sqlite_config import SQLiteConnect
+from src.util.util import check_dir_exist
 
 
 class TXSpider():
@@ -20,6 +23,10 @@ class TXSpider():
         self.re = connect_redis()
         self.debug = debug
         self.sqlc = SQLiteConnect(BASE_DIR + "sqlite.db")
+
+    def check_dirs(self):
+        check_dir_exist(DATA_DIR)
+        check_dir_exist(os.path.join(BASE_DIR + "/download_image/"))
 
     def main(self):
         """

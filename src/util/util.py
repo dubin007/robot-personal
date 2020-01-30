@@ -36,3 +36,7 @@ def check_should_update(conn):
     else:
         should_update = conn.get_update_flag()
     return should_update
+
+def check_dir_exist(dir):
+    if os.path.exists(dir) == False:
+        os.makedirs(dir)

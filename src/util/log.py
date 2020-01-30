@@ -3,6 +3,8 @@ import os
 from src.util.constant import BASE_DIR, LOGGING_FORMAT
 import datetime
 
+from src.util.util import check_dir_exist
+
 class LogSupport(object):
 
     debug = False
@@ -33,10 +35,6 @@ class LogSupport(object):
         if self.debug:
             print(info)
         self.logging.info(info)
-
-def check_dir_exist(dir):
-    if os.path.exists(dir) == False:
-        os.makedirs(dir)
 
 def get_now_time():
     return datetime.datetime.now().strftime('%Y-%m-%d')
