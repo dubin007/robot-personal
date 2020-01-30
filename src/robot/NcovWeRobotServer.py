@@ -150,7 +150,7 @@ def text_reply(msg):
         # 删除图片
         remove_image(msg.fileName)
         # 带有辟谣等字眼的信息直接返回
-        if len(text_list) == 0 or check_identify(msg.text):
+        if len(text_list) == 0 or check_identify("".join(text_list)):
             return
         text_list = list(filter(lambda x: len(x) > 10, text_list))
         identify_news(text_list, itchat, msg['FromUserName'])

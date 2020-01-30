@@ -18,7 +18,7 @@ curPath = os.path.abspath(os.path.dirname(__file__))
 rootPath = os.path.split(curPath)[0]
 BASE_PATH = os.path.split(rootPath)[0]
 sys.path.append(BASE_PATH)
-
+ocr = CnOcr()
 ls = LogSupport()
 class Image2Title:
     def __init__(self, topK=5):
@@ -40,7 +40,7 @@ class Image2Title:
             #text = pytesseract.image_to_string(image, lang='chi_sim')
             # cnocr的中文OCR识别效果显著更好
             tmp = ocr.ocr(image_path) #中间结果, 形如 ['兼', '葭'], ['先', '秦', ':', '佚', '名']
-            text=''.join( [''.join(line) for line in tmp] )
+            text=''.join([''.join(line) for line in tmp] )
             text = self.__preprocessing(text)
             if len(text) > 0:
                 s = SnowNLP(text)
@@ -58,9 +58,9 @@ if __name__ == '__main__':
     from urllib.request import quote
     import requests
     from src.util.parse_jsonp import loads_jsonp
-    ocr = CnOcr()
+
     ocr1 = Image2Title()
-    topK_titles = ocr1("/Users/maicius/code/NcovWeRobot/resource/download_image/200128-201021.png")
+    topK_titles = ocr1("/Users/maicius/code/NcovWeRobot/resource/download_image/test.png")
     for idx, title in enumerate(topK_titles):
         print("title No.{}: {}".format(idx, title))
         url = "https://vp.fact.qq.com/searchresult?title={}&num=0&_=1580200136791&callback=jsonp1".format(quote(title))
