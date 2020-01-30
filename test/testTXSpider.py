@@ -84,15 +84,15 @@ class testNcovWeRobot(unittest.TestCase):
         self.sp.main()
 
     def test_update_city(self):
-        old_city = [{"country": "中国", "area": "湖北", "city": "待确认", "confirm": 0, "suspect": 0, "dead": 0, "heal": 30,
-                     "n_confirm": 2, "n_suspect": 0, "n_dead": 0, "n_heal": 30},
+        old_city = [{"country": "中国", "area": "湖北", "city": "待确认", "confirm": 0, "suspect": 0, "dead": 0, "heal": 20,
+                     "n_confirm": 2, "n_suspect": 0, "n_dead": 0, "n_heal": 3},
                     {"country": "中国", "area": "西藏", "city": "拉萨", "confirm": 1, "suspect": 0, "dead": 0, "heal": 0,
                      "n_confirm": 1, "n_suspect": 0, "n_dead": 0, "n_heal": 0},
                     {"country": "中国", "area": "重庆", "city": "涪陵区", "confirm": 1, "suspect": 0, "dead": 0, "heal": 0,
                      "n_confirm": 1, "n_suspect": 0, "n_dead": 0, "n_heal": 0}
                     ]
         new_city = [{"country": "中国", "area": "湖北", "city": "待确认", "confirm": 0, "suspect": 0, "dead": 0, "heal": 30,
-                     "n_confirm": 2, "n_suspect": 0, "n_dead": 0, "n_heal": 30},
+                     "n_confirm": 2, "n_suspect": 0, "n_dead": 0, "n_heal": 3},
                     {"country": "中国", "area": "西藏", "city": "拉萨", "confirm": 1, "suspect": 0, "dead": 0, "heal": 0,
                      "n_confirm": 1, "n_suspect": 0, "n_dead": 0, "n_heal": 0},
                     {"country": "中国", "area": "西藏", "city": "林芝", "confirm": 1, "suspect": 0, "dead": 0, "heal": 0,

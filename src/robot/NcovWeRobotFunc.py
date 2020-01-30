@@ -28,10 +28,15 @@ def user_subscribe(conn, user, area, jieba):
         ls.logging.error("all area key 为空")
     # 去掉订阅两字
     area = area.replace("订阅", '')
-    area_list = jieba.cut(area)
-    area_list = list(filter(lambda x: len(x) > 1, area_list))
     succ_subscribe = []
     failed_subscribe = []
+    # 全国有两个地方叫朝阳
+    if area == '朝阳':
+        return succ_subscribe, ['朝阳']
+    area_list = jieba.cut(area)
+
+    area_list = list(filter(lambda x: len(x) > 1, area_list))
+
     tails = ['省', '市', '区', '县','州','自治区', '自治州', '']
 
     for ar in area_list:
@@ -150,7 +155,6 @@ def do_ncov_update(conn, itchat, debug=True):
                 for city in update_city:
                     push_info = construct_push_info(city)
                     subscribe_user = conn.smembers(city['city'])
-
                     ls.logging.info("begin to send info...")
                     for user in subscribe_user:
                         try:
@@ -178,6 +182,15 @@ def construct_push_info(city):
     n_dead = '死亡病例{}例'.format(city['n_dead']) if city['n_dead'] > 0 else ''
     push_info = list(filter(lambda x: len(x) > 0, [n_confirm, n_suspect, n_heal, n_dead]))
     push_info_str = area + "、".join(push_info) + "；"
+
+    today = '今日{}共累计新增'.format(city['city'])
+    t_confirm = '确诊病例{}例'.format(city['t_confirm']) if city['t_confirm'] > 0 else ''
+    t_suspect = '疑似病例{}例'.format(city['t_suspect']) if city['t_suspect'] > 0 else ''
+    t_heal = '治愈病例{}例'.format(city['t_heal']) if city['t_heal'] > 0 else ''
+    t_dead = '死亡病例{}例'.format(city['t_dead']) if city['t_dead'] > 0 else ''
+    push_info = list(filter(lambda x: len(x) > 0, [t_confirm, t_suspect, t_heal, t_dead]))
+    if len(push_info) > 0:
+        push_info_str += today + "、".join(push_info) + "；"
 
     confirm = '目前共有确诊病例{}例'.format(city['confirm'])
     suspect = '疑似病例{}例'.format(city['suspect']) if city['suspect'] > 0 else ''
