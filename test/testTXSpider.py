@@ -1,3 +1,4 @@
+import json
 import unittest
 from src.spider.TXSpider import TXSpider
 import re
@@ -98,4 +99,11 @@ class testNcovWeRobot(unittest.TestCase):
                      "n_confirm": 2, "n_suspect": 0, "n_dead": 0, "n_heal": 0}]
         update_city = self.sp.merge_update_city(old_city_list=old_city, new_city_list=new_city)
         assert len(update_city) == 4
+        print(update_city)
+
+    def test_parse_new_data(self):
+        with open('test_data.json', 'r', encoding='utf-8') as r:
+            data = json.load(r)
+        data = json.loads(data['data'])
+        update_city = self.sp.change_raw_data_format_new(data['areaTree'])
         print(update_city)

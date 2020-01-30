@@ -25,7 +25,9 @@ class TXSpider():
         """
         try:
             data = self.get_raw_real_time_info()
-            now_data = self.change_raw_data_format(data)
+            now_data = self.change_raw_data_format_new(data)
+            # 保存所有的地区名
+            self.get_all_area(now_data)
             # 加载上一次最新的数据
             last_data = load_last_info(self.re)
             if not last_data:
@@ -42,10 +44,11 @@ class TXSpider():
                     old_update_city = json.loads(self.re.get(UPDATE_CITY))
                     update_city = self.merge_update_city(old_city_list=old_update_city, new_city_list=update_city)
                 save_json_info_as_key(self.re, UPDATE_CITY, update_city)
-                self.log.logging.info("set update city {}".format(json.dumps(update_city)))
+                self.log.logging.info("set update city {}".format(json.dumps(update_city)[:20]))
             else:
                 # self.re.set(SHOULD_UPDATE, 0)
                 self.log.logging.info("no update city")
+
         except BaseException as e:
             self.log.logging.exception(e)
 
@@ -109,10 +112,18 @@ class TXSpider():
 
     def get_real_time_url(self):
         base_url = 'https://view.inews.qq.com/g2/getOnsInfo?'
+        # 旧接口
+        # params = {
+        #     'name': 'wuwei_ww_area_counts'
+        # }
         params = {
-            'name': 'wuwei_ww_area_counts'
+            'name': 'disease_h5'
         }
         return base_url + parse.urlencode(params)
+
+    def get_disease_h5_url(self):
+
+        pass
 
     def get_raw_real_time_info(self):
         """
@@ -126,7 +137,7 @@ class TXSpider():
             self.log.logging.error("Failed to get info")
             raise ConnectionError
         content = json.loads(res.content.decode("utf-8"))
-        data = json.loads(content['data'])
+        data = json.loads(content['data'])['areaTree']
         return data
 
     def change_raw_data_format(self, data):
@@ -158,7 +169,32 @@ class TXSpider():
         data_dict.update(state_dict)
 
         self.log.logging.info("update data success---")
-        self.get_all_area(data_dict)
+        return data_dict
+
+    def change_raw_data_format_new(self, data):
+        data_dict = {}
+        for area in data:
+            if area['name'] == '待确认':
+                # print(area)
+                continue
+            # 区分辽宁朝阳市和北京朝阳区
+            if area['name'] == '朝阳':
+                area_key = '朝阳区'
+                area['name'] = '朝阳区'
+            elif area['name'] == '中国':
+                area_key = '全国'
+                area['name'] ='全国'
+            else:
+                area_key = area['name']
+            data_dict[area_key] = area['total']
+            data_dict[area_key]['city'] = area['name']
+            data_dict[area_key]['area'] = area['name']
+            data_dict[area_key]['t_confirm'] = area['today']['confirm']
+            data_dict[area_key]['t_suspect'] = area['today']['suspect']
+            data_dict[area_key]['t_dead'] = area['today']['dead']
+            data_dict[area_key]['t_heal'] = area['today']['heal']
+            if 'children' in area:
+                data_dict.update(self.change_raw_data_format_new(area['children']))
         return data_dict
 
     def fill_unknow(self, data):
