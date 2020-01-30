@@ -14,7 +14,7 @@ from src.util.util import check_image, check_identify, remove_image, get_random_
 from itchat.content import *
 from src.robot.NcovWeRobotFunc import *
 from src.util.constant import INFO_TAIL, INFO_TAIL_ALL, FOCUS_TAIL, HELP_CONTENT, \
-    GROUP_CONTENT_HELP, ONLINE_TEXT, FILE_HELPER
+    GROUP_CONTENT_HELP, ONLINE_TEXT, FILE_HELPER, CHAOYANG_INFO
 from src.util.redis_config import connect_redis
 from src.robot.NcovGroupRobot import *
 
@@ -29,6 +29,9 @@ def text_reply(msg):
             return
         if check_whether_register(msg.text):
             succ, failed = user_subscribe(conn, msg.user.UserName, msg.text, jieba)
+            if len(failed) == 1 and failed[0] == '朝阳':
+                itchat.send(CHAOYANG_INFO, toUserName=msg.user.UserName)
+                return
             succ_text = ''
             if len(succ) > 0:
                 succ_text = '成功订阅{}的疫情信息!'.format(",".join(succ))

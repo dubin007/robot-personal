@@ -163,10 +163,9 @@ class testNcovWeRobot(unittest.TestCase):
             print("exists")
 
     def test_construct_push_info(self):
-        city1 = {'city': '某某地区', 'confirm': 100, 'dead': 0, 'n_dead': 100, 'heal': 0, 'suspect': 0, 'n_confirm': 50,
-                'n_suspect': 50, 'n_heal': 100}
-        city2 = {'city': '某某地区', 'confirm': 100, 'dead': 0, 'n_dead': 100, 'heal': 0, 'suspect': 0, 'n_confirm': 50,
-                'n_suspect': 0, 'n_heal': 0}
+        city1 = {"confirm": 4, "suspect": 0, "dead": 0, "heal": 0, "city": "德国", "t_confirm": 0, "t_suspect": 0,
+                 "t_dead": 0, "t_heal": 0, "n_confirm": 3, "n_suspect": 0, "n_dead": 0, "n_heal": 0}
+        city2 = {"confirm": 6, "suspect": 0, "dead": 0, "heal": 0, "city": "张家口", "t_confirm": 5, "t_suspect": 0, "t_dead": 0, "t_heal": 0, "n_confirm": 6, "n_suspect": 0, "n_dead": 0, "n_heal": 0}
         print(construct_push_info(city1))
         print(construct_push_info(city2))
 
