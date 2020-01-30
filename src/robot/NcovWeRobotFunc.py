@@ -40,12 +40,16 @@ def user_subscribe(conn, user, area, jieba):
     tails = ['省', '市', '区', '县','州','自治区', '自治州', '']
 
     for ar in area_list:
-        ar = re.subn(AREA_TAIL, '', ar)[0]
-        if ar == '中国' or ar == '全国':
+        if ar == '朝阳市' or ar == '朝阳区':
+            conn.sadd(ar, user)
+            conn.sadd(ORDER_KEY, ar)
+            succ_subscribe.append(ar)
+        elif ar == '中国' or ar == '全国':
             conn.sadd('全国', user)
             conn.sadd(ORDER_KEY, '全国')
             succ_subscribe.append('全国')
         else:
+            ar = re.subn(AREA_TAIL, '', ar)[0]
             flag = False
             for tail in tails:
                 if ar + tail in all_area:
