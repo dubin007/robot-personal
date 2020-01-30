@@ -1,8 +1,11 @@
 import os
 import sqlalchemy as db
+
 from src.util.log import LogSupport
 
 ls = LogSupport()
+
+
 class SQLiteConnect:
     '''SQLite 数据库接口封装类'''
 
@@ -24,9 +27,16 @@ class SQLiteConnect:
                                     db.Column('id', db.Integer(), primary_key=True, nullable=False),
                                     db.Column("flag", db.Integer()))
 
+        self.group_name = db.Table('group_name', self.metadata,
+                                   db.Column('id', db.Integer(), primary_key=True, nullable=True),
+                                   db.Column("uid", db.String(255), nullable=False),
+                                   db.Column("gid", db.String(255), nullable=False),
+                                   db.Column('gname', db.String(255), nullable=False))
+
         if create_tables:
             try:
                 self.metadata.create_all(self.engine)
+                # 初始化update flag为1
                 query = db.insert(self.update_flag).values(id=1, flag=0)
                 res = self.conn.execute(query)
                 ls.logging.info("初始化数据库成功: {}".format(res.rowcount))
@@ -36,7 +46,7 @@ class SQLiteConnect:
 
     def do_update_flag(self, flag):
         try:
-            update = db.update(self.update_flag).where(self.update_flag.columns.id==1).values(flag=flag)
+            update = db.update(self.update_flag).where(self.update_flag.columns.id == 1).values(flag=flag)
             res = self.conn.execute(update)
             return res.rowcount
         except BaseException as e:
@@ -46,7 +56,7 @@ class SQLiteConnect:
 
     def get_update_flag(self):
         try:
-            query = db.select([self.update_flag]).where(self.update_flag.columns.id==1)
+            query = db.select([self.update_flag]).where(self.update_flag.columns.id == 1)
             result_proxy = self.conn.execute(query)
             result = result_proxy.fetchone()
             return result[1]
@@ -59,10 +69,12 @@ class SQLiteConnect:
         '''保存一个用户对于制定城市的订阅'''
         # TODO: add feedback for invalid input
         try:
-            # 插入数据
-            query = db.insert(self.subscriptions).values(uid=uid, city=city)
-            self.conn.execute(query)
-            return 0
+            res = self.query_subscription(uid, city)
+            if res == None:
+                # 插入数据
+                query = db.insert(self.subscriptions).values(uid=uid, city=city)
+                res = self.conn.execute(query)
+                return res.rowcount
         except BaseException as e:
             raise e
 
@@ -92,7 +104,13 @@ class SQLiteConnect:
             )
         )
         res = self.conn.execute(query)
+        return res.rowcount
 
+    def cancel_all_subscription(self, uid):
+        query = db.delete(self.subscriptions).where(
+            self.subscriptions.columns.uid == uid
+        )
+        res = self.conn.execute(query)
         return res.rowcount
 
     def get_subscribed_users(self, city):
@@ -101,5 +119,75 @@ class SQLiteConnect:
         query = db.select([self.subscriptions]).where(self.subscriptions.columns.city == city)
         result_proxy = self.conn.execute(query)
         results = result_proxy.fetchall()
-
         return [sub[1] for sub in results]
+
+    def add_group_for_user(self, uid, gid, gname):
+        """
+        user id
+        :param uid: user id
+        :param gid: 需要添加的群id,群id每次登陆可能会变
+        :param gname: 群名称
+        :return:
+        """
+        try:
+            already = self.query_group_for_user(uid, gname)
+            if already == None:
+                insert = db.insert(self.group_name).values(uid=uid, gid=gid, gname=gname)
+                res = self.conn.execute(insert)
+                return res.rowcount
+            else:
+                update = db.update(self.group_name).where(
+                    db.and_(uid=uid, gname=gname)).values(gid=gid)
+                res = self.conn.execute(update)
+                return res.rowcount
+        except BaseException as e:
+            ls.logging.error("关注{}的群聊{}失败".format(uid, gname))
+            ls.logging.exception(e)
+            return 0
+
+
+    def query_group_for_user(self, uid, gname):
+        """
+        根据群名称和用户名查找是否已关该群，避免重复添加
+        :param uid:
+        :param gname:
+        :return:
+        """
+        query = db.select([self.group_name]).where(
+            db.and_(
+                self.group_name.columns.uid == uid,
+                self.group_name.columns.gname == gname
+            )
+        )
+        result_proxy = self.conn.execute(query)
+        result = result_proxy.fetchall()
+        return result
+
+    def query_all_group_for_user(self, uid):
+        """
+        根据id查询该用户所有辟谣的群
+        :param uid:
+        :return:
+        """
+        query = db.select([self.group_name]).where(
+            self.group_name.columns.uid == uid,
+        )
+        result_proxy = self.conn.execute(query)
+        result = result_proxy.fetchone()
+        return result
+
+    def cancel_group_for_user(self, uid, gname):
+        """
+        根据群和uid取消辟谣
+        :param uid:
+        :param gname:
+        :return:
+        """
+        query = db.delete(self.group_name).where(
+            db.and_(
+                self.group_name.columns.uid == uid,
+                self.group_name.columns.city == gname
+            )
+        )
+        res = self.conn.execute(query)
+        return res.rowcount
