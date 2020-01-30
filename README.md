@@ -35,7 +35,7 @@
 - 1.订阅指定微信群
 - 2.检测聊天记录中的新闻(长段文字)、分享（标题）、图片
 - 3.对长文提取文本摘要(开源工具：[SnowNLP](http://www.52nlp.cn/tag/snownlp))
-- 4.识别图片的文字并提取摘要(开源工具：[tesseract](https://github.com/tesseract-ocr))
+- 4.识别图片的文字并提取摘要(开源工具：[cnocr](https://github.com/daniellibin/cnocr))
 - 5.在腾讯辟谣平台上进行搜索并返回结果
 
 ## 运行环境
