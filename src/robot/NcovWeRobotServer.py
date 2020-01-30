@@ -47,10 +47,10 @@ def text_reply(msg):
                 area = succ[0]
                 if area != '全国' and area != '中国':
                     time.sleep(get_random_split())
-                    itchat.send(INFO_TAIL.format(area, area), toUserName=msg.user.UserName)
+                    itchat.send(INFO_TAIL.format(area, area) + get_random_tail(), toUserName=msg.user.UserName)
                 else:
                     time.sleep(get_random_split())
-                    itchat.send(INFO_TAIL_ALL, toUserName=msg.user.UserName)
+                    itchat.send(INFO_TAIL_ALL + get_random_tail(), toUserName=msg.user.UserName)
         elif check_whether_unregist(msg.text):
             succ, failed = user_unsubscribe_multi(conn, msg.user.UserName, msg.text, jieba)
             succ_text = ''
