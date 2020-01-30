@@ -3,11 +3,12 @@ import re
 import time
 
 from src.util.constant import ALL_AREA_KEY, AREA_TAIL, FIRST_NCOV_INFO, NO_NCOV_INFO, ORDER_KEY, UN_REGIST_PATTERN, \
-    UN_REGIST_PATTERN2, SHOULD_UPDATE, UPDATE_CITY, SEND_SPLIT, UPDATE_NCOV_INFO, UPDATE_NCOV_INFO_ALL, \
-    SHORT_TIME_SPLIT, INFO_TAILS
+    UN_REGIST_PATTERN2, SHOULD_UPDATE, UPDATE_CITY
 from src.util.log import LogSupport
 from src.util.redis_config import load_last_info
 import json
+
+from src.util.util import get_random_tail, get_random_split, get_random_long_time
 
 ls = LogSupport()
 def check_whether_register(text):
@@ -190,16 +191,4 @@ def construct_push_info(city):
 def check_help(text):
     text = text.lower()
     return re.match('^help|帮助$', text) != None
-
-def get_random_tail():
-    return INFO_TAILS[random.randint(0, 9)]
-
-def get_random_split():
-    return random.random() * 6
-
-def get_random_split_short():
-    return random.random() * 3
-
-def get_random_long_time():
-    return random.random() * 60 * 60
 

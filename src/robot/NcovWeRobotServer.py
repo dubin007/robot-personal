@@ -10,10 +10,10 @@ BASE_PATH = os.path.split(rootPath)[0]
 sys.path.append(BASE_PATH)
 from src.ocr.OCR import Image2Title
 from src.ocr.TextSummary import get_text_summary
-from src.util.util import check_image, check_identify, remove_image
+from src.util.util import check_image, check_identify, remove_image, get_random_split_short
 from itchat.content import *
 from src.robot.NcovWeRobotFunc import *
-from src.util.constant import INFO_TAIL, INFO_TAIL_ALL, FOCUS_TAIL, BASE_DIR, HELP_CONTENT, \
+from src.util.constant import INFO_TAIL, INFO_TAIL_ALL, FOCUS_TAIL, HELP_CONTENT, \
     GROUP_CONTENT_HELP, ONLINE_TEXT, FILE_HELPER
 from src.util.redis_config import connect_redis
 from src.robot.NcovGroupRobot import *
