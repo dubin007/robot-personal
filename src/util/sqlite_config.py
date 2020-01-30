@@ -28,10 +28,14 @@ class SQLiteConnect:
                                     db.Column("flag", db.Integer()))
 
         self.group_name = db.Table('group_name', self.metadata,
-                                   db.Column('id', db.Integer(), primary_key=True, nullable=True),
+                                   db.Column('id', db.Integer(), primary_key=True, nullable=False),
                                    db.Column("uid", db.String(255), nullable=False),
                                    db.Column("gid", db.String(255), nullable=False),
                                    db.Column('gname', db.String(255), nullable=False))
+
+        self.area_list = db.Table('area_list', self.metadata,
+                                  db.Column('id', db.Integer(), primary_key=True, nullable=False),
+                                  db.Column('area', db.String(255), nullable=False))
 
         if create_tables:
             try:
@@ -131,7 +135,7 @@ class SQLiteConnect:
         """
         try:
             already = self.query_group_for_user(uid, gname)
-            if already == None:
+            if already == None or len(already) == 0:
                 insert = db.insert(self.group_name).values(uid=uid, gid=gid, gname=gname)
                 res = self.conn.execute(insert)
                 return res.rowcount
@@ -144,7 +148,6 @@ class SQLiteConnect:
             ls.logging.error("关注{}的群聊{}失败".format(uid, gname))
             ls.logging.exception(e)
             return 0
-
 
     def query_group_for_user(self, uid, gname):
         """
@@ -161,7 +164,7 @@ class SQLiteConnect:
         )
         result_proxy = self.conn.execute(query)
         result = result_proxy.fetchall()
-        return result
+        return [x[3] for x in result]
 
     def query_all_group_for_user(self, uid):
         """
@@ -173,8 +176,8 @@ class SQLiteConnect:
             self.group_name.columns.uid == uid,
         )
         result_proxy = self.conn.execute(query)
-        result = result_proxy.fetchone()
-        return result
+        result = result_proxy.fetchall()
+        return [x[3] for x in result]
 
     def cancel_group_for_user(self, uid, gname):
         """
@@ -186,8 +189,31 @@ class SQLiteConnect:
         query = db.delete(self.group_name).where(
             db.and_(
                 self.group_name.columns.uid == uid,
-                self.group_name.columns.city == gname
+                self.group_name.columns.gname == gname
             )
         )
         res = self.conn.execute(query)
+        return res.rowcount
+
+    def cancel_all_group_for_user(self, uid):
+        delete = db.delete(self.group_name).where(
+            self.group_name.columns.uid == uid
+        )
+        res = self.conn.execute(delete)
+        return res.rowcount
+
+    def get_all_area(self):
+        select = "select area from {};".format('area_list')
+        res = self.conn.execute(select).fetchall()
+        all_area = [sub[0] for sub in res]
+        return all_area
+
+    def check_area(self, city):
+        select = "select id from area_list where area='{}'".format(city)
+        res = self.conn.execute(select)
+        return len(res.fetchall()) > 0
+
+    def add_area_list(self, city):
+        insert = db.insert(self.area_list).values(area=city)
+        res = self.conn.execute(insert)
         return res.rowcount

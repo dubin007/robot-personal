@@ -1,8 +1,10 @@
 import redis
-from src.util.constant import REDIS_HOST, STATE_NCOV_INFO, REDIS_HOST_DOCKER
+from src.util.constant import REDIS_HOST, STATE_NCOV_INFO, REDIS_HOST_DOCKER, USE_REDIS, DATA_DIR
 import json
 
+from src.util.log import LogSupport
 
+ls = LogSupport()
 def connect_redis():
     pool = judge_pool()
     conn = redis.Redis(connection_pool=pool)
@@ -40,10 +42,21 @@ def save_json_info_as_key(conn, key, data):
     conn.set(key, json.dumps(data, ensure_ascii=False))
 
 def load_last_info(conn):
-    data_len = conn.llen(STATE_NCOV_INFO)
-    if data_len == 0:
-        return None
-    elif data_len >= 10:
-        conn.lpop(STATE_NCOV_INFO)
-    last = json.loads(conn.lrange(STATE_NCOV_INFO, -1, -1)[0])
-    return last
+    if USE_REDIS:
+        data_len = conn.llen(STATE_NCOV_INFO)
+        if data_len == 0:
+            return None
+        elif data_len >= 10:
+            conn.lpop(STATE_NCOV_INFO)
+        last = json.loads(conn.lrange(STATE_NCOV_INFO, -1, -1)[0])
+        return last
+    else:
+        try:
+            with open(DATA_DIR + STATE_NCOV_INFO + ".json", 'r', encoding='utf-8') as r:
+                data = json.loads(r)
+            return data
+        except BaseException as e:
+            ls.logging.exception(e)
+            return None
+
+
