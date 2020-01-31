@@ -8,8 +8,10 @@ from src.util.util import check_dir_exist
 class LogSupport(object):
 
     debug = False
+    logging = None
     def __init__(self):
-        self.logging = self.init_log()
+        if not self.logging:
+            self.logging = self.init_log()
         self.logging_info("-init logging module success")
 
     def init_log(self):

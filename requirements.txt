@@ -2,9 +2,9 @@ requests
 itchat
 redis
 jieba
-mxnet==1.4.1
-snownlp
-cnocr==1.0.0
-scipy==1.4.1
 sqlalchemy
+# snownlp
+# cnocr==1.0.0
+# mxnet==1.4.1
+# scipy==1.4.1
 # pytesseract
