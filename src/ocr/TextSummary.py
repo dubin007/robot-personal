@@ -12,7 +12,7 @@ def __preprocessing(text):
 
 def get_text_summary(text, topK=5):
     text = __preprocessing(text)
-    return text[:20]
+    return [text[:20]]
     # s = SnowNLP(text)
     # topK_titles = s.summary(topK)
     # return topK_titles
