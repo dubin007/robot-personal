@@ -1,7 +1,10 @@
 from urllib import parse
 import requests
+
 from src.util.log import LogSupport
 import json
+
+from src.util.util import parse_identify_res
 
 ls = LogSupport()
 def get_identify_url(title):
@@ -11,9 +14,6 @@ def get_identify_url(title):
         'num': 0
     }
     return url + parse.urlencode(params)
-def parse_identify_res(text, source):
-    reply_text = '这个{}是{}，真实情况是: {}。不信的话你可以点这里看详情:{}'.format(text[0:15], source['result'], source['abstract'], source['oriurl'])
-    return reply_text
 
 def get_headers():
     return {

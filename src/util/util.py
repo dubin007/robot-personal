@@ -41,3 +41,7 @@ def check_dir_exist(dir):
     if os.path.exists(dir) == False:
         os.makedirs(dir)
 
+def parse_identify_res(text, source):
+    reply_text = 'em...这个{}可能是{}，详细的情况是: {}。点这里看详细的报道:{}'.format(text[0:20], source['result'].split('-')[1], source['abstract'], source['oriurl'])
+    return reply_text
+

@@ -212,20 +212,20 @@ def do_ncov_update(itchat, debug=True):
                 update_city = get_update_city(conn)
                 if not update_city:
                     ls.logging.warning("-No update city info")
-                    continue
-                for city in update_city:
-                    push_info = construct_push_info(city)
-                    subscribe_user = get_members_by_city(conn, city['city'])
-                    ls.logging.info("begin to send info...")
-                    for user in subscribe_user:
-                        try:
-                            ls.logging.info("info:{},user: {}".format(push_info[:20], user))
-                            itchat.send(push_info, toUserName=user)
-                            # 发送太快容易出事
-                            time.sleep(get_random_split())
-                        except BaseException as e:
-                            ls.logging.error("send failed，{}".format(user))
-                            ls.logging.exception(e)
+                else:
+                    for city in update_city:
+                        push_info = construct_push_info(city)
+                        subscribe_user = get_members_by_city(conn, city['city'])
+                        ls.logging.info("begin to send info...")
+                        for user in subscribe_user:
+                            try:
+                                ls.logging.info("info:{},user: {}".format(push_info[:20], user))
+                                itchat.send(push_info, toUserName=user)
+                                # 发送太快容易出事
+                                time.sleep(get_random_split())
+                            except BaseException as e:
+                                ls.logging.error("send failed，{}".format(user))
+                                ls.logging.exception(e)
             if debug:
                 break
             # 暂停几分钟
@@ -242,7 +242,8 @@ def get_update_city(conn):
             update_city = json.loads(update_city)
     else:
         try:
-            with open(DATA_DIR + UPDATE_CITY +".json", 'r', encoding='utf-8') as r:
+            path = os.path.join(DATA_DIR, UPDATE_CITY +".json")
+            with open(path, 'r', encoding='utf-8') as r:
                 update_city = json.load(r)
             conn.do_update_flag(0)
         except BaseException as e:

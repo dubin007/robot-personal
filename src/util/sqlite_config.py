@@ -20,9 +20,10 @@ class SQLiteConnect:
     def initialize_tables(self, create_tables=False):
         self.subscriptions = db.Table('subscriptions', self.metadata,
                                       db.Column('id', db.Integer(), primary_key=True, nullable=False),
-                                      db.Column('uid', db.String(255), nullable=False),
-                                      db.Column('city', db.String(255), nullable=False),
+                                      db.Column('uid', db.String(255), nullable=True),
+                                      db.Column('city', db.String(255), nullable=True)
                                       )
+
         self.update_flag = db.Table('update_flag', self.metadata,
                                     db.Column('id', db.Integer(), primary_key=True, nullable=False),
                                     db.Column("flag", db.Integer()))

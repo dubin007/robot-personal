@@ -106,15 +106,17 @@ def text_reply(msg):
                     itchat.send(GROUP_CONTENT_HELP.format("，".join(groups)), toUserName=FILE_HELPER)
                 else:
                     itchat.send(NO_GROUP_CONTENT_HELP, toUserName=FILE_HELPER)
+
+            elif msg.text:pass
     except BaseException as e:
         ls.logging.exception(e)
 
 
 @itchat.msg_register([TEXT, NOTE], isGroupChat=True)
 def text_reply(msg):
-    if msg.isAt:
-        msg.user.send("干啥啊")
-        return
+    # if msg.isAt:
+    #     msg.user.send("干啥啊？（自动回复）")
+    #     return
     # 筛掉过短的长文和重复字段过多的长文
     if len(msg.text) < 50 or len(set(msg.text)) < 20:
         return
