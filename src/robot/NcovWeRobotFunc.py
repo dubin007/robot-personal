@@ -67,6 +67,23 @@ def user_subscribe(conn, user, area, jieba):
                 failed_subscribe.append(ar)
     return succ_subscribe, failed_subscribe
 
+def find_true_name_for_city(conn, city):
+    tails = ['省', '市', '区', '县', '州', '自治区', '自治州', '']
+    ar = city
+    all_area = set(conn.get_all_area())
+    if ar == '朝阳市' or ar == '朝阳区':
+        return ar
+    elif ar == '中国' or ar == '全国':
+        return '全国'
+    else:
+        ar = re.subn(AREA_TAIL, '', ar)[0]
+        for tail in tails:
+            if ar + tail in all_area:
+                # 使该地区的键值唯一，以腾讯新闻中的名称为准，比如湖北省和湖北都使用湖北，而涪陵区和涪陵都使用涪陵区
+                return ar + tail
+
+    return city
+
 def add_order_key(conn, area, user):
     if USE_REDIS:
         conn.sadd(area, user)
@@ -159,24 +176,32 @@ def user_unsubscribe_multi_sqlite(conn, user, area, jieba):
     return unsubscribe_list, unsubscribe_list_fail
 
 
-def get_ncvo_info_with_city(conn, citys):
+def get_ncvo_info_with_city(conn, citys, group=False):
     """
     根据传入的城市列表获取疫情信息
     :param conn: redis连接
     :param citys:
     :return:
     """
-    last = load_last_info(conn)
-    ncov = []
-    if not last:
-        return NO_NCOV_INFO.format(", ".join(citys))
-    for city in citys:
-        if city in last:
-            info = last[city]
-            ncov.append(FIRST_NCOV_INFO.format(info['city'], info['confirm'], info['dead'], info['heal']))
-        else:
-            ncov.append(NO_NCOV_INFO.format(city))
-    return "；".join(ncov)
+    try:
+        last = load_last_info(conn)
+        ncov = []
+        if not last:
+            return NO_NCOV_INFO.format(", ".join(citys))
+        for city in citys:
+            if city in last:
+                info = last[city]
+                ncov.append(FIRST_NCOV_INFO.format(info['city'], info['confirm'], info['dead'], info['heal']))
+                if group:
+                    today_info = get_today_push_info(info)
+                    ncov.append(today_info)
+
+            else:
+                ncov.append(NO_NCOV_INFO.format(city))
+        return "；".join(ncov)
+    except BaseException as e:
+        ls.logging.exception(e)
+        return NO_NCOV_INFO.format(",".join(citys))
 
 def restore_we_friend(conn, itchat):
     """
@@ -285,6 +310,18 @@ def construct_push_info(city):
     push_info = list(filter(lambda x: len(x) > 0, [confirm, suspect, heal, dead]))
     push_info_str += "、".join(push_info) + "。"
     push_info_str += get_random_tail()
+    return push_info_str
+
+def get_today_push_info(city):
+    push_info_str = ''
+    today = '今日{}共累计新增'.format(city['city'])
+    t_confirm = '确诊病例{}例'.format(city['t_confirm']) if city['t_confirm'] > 0 else ''
+    t_suspect = '疑似病例{}例'.format(city['t_suspect']) if city['t_suspect'] > 0 else ''
+    t_heal = '治愈病例{}例'.format(city['t_heal']) if city['t_heal'] > 0 else ''
+    t_dead = '死亡病例{}例'.format(city['t_dead']) if city['t_dead'] > 0 else ''
+    push_info = list(filter(lambda x: len(x) > 0, [t_confirm, t_suspect, t_heal, t_dead]))
+    if len(push_info) > 0:
+        push_info_str += today + "、".join(push_info) + "；"
     return push_info_str
 
 def check_help(text):

@@ -18,7 +18,9 @@ def check_identify(text):
     return len(re.findall('谣言|辟谣|假消息|假的|防控|卫健委|卫生部|指挥部|地图|抗击', text)) > 0
 
 def get_random_tail():
-    return INFO_TAILS[random.randint(0, 12)]
+
+    tail = "\n=========" + INFO_TAILS[random.randint(0, 12)]
+    return tail
 
 def get_random_split():
     return random.random() * 6
@@ -42,6 +44,6 @@ def check_dir_exist(dir):
         os.makedirs(dir)
 
 def parse_identify_res(text, source):
-    reply_text = 'em...这个{}可能是{}，详细的情况是: {}。点这里看详细的报道:{}'.format(text[0:20], source['result'].split('-')[1], source['abstract'], source['oriurl'])
+    reply_text = 'em...这个「{}」大概是{}，详细的情况是: {}。\n这里有详细的报道:{}'.format(text[0:20], source['result'].split('-')[1], source['abstract'], source['oriurl'])
     return reply_text
 

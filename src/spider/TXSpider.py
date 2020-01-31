@@ -225,9 +225,6 @@ class TXSpider():
             now_area = set(self.sqlc.get_all_area())
             new_area = all_area.difference(now_area)
             for area in new_area:
-                short = re.subn(AREA_TAIL, '', area)[0]
-                if short != area and len(short) >= 2:
-                    self.sqlc.add_area_list(short)
                 self.sqlc.add_area_list(area)
             pass
 

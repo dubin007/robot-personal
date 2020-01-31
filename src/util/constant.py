@@ -46,7 +46,9 @@ LOGGING_FORMAT = '%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(mess
 
 AREA_TAIL = '(自治+)|省|市|县|区|镇'
 
-FIRST_NCOV_INFO = '{}目前有确诊病例{}例，死亡病例{}例，治愈病例{}例。为了保证您能持续收到消息，根据WX的规则，建议您偶尔回复我一下～'
+FIRST_NCOV_INFO = '{}目前有确诊病例{}例，死亡病例{}例，治愈病例{}例。'
+
+FIRST_NCOV_INFO2 = '{}目前有确诊病例{}例，死亡病例{}例，治愈病例{}例。'
 
 INFO1 = '\n向所有奋斗在抗击疫情一线的工作人员、志愿者致敬！'
 INFO2 = '\nfeiyan.help，病毒无情，但人间有爱。'
@@ -67,7 +69,7 @@ INFO_TAILS = [INFO1, INFO2, INFO3, INFO4, INFO5, INFO6, INFO7, INFO8, INFO9, INF
 UPDATE_NCOV_INFO = '{}有数据更新，新增确诊病例{}例，目前共有确诊病例{}例，死亡病例{}例，治愈病例{}例。'
 UPDATE_NCOV_INFO_ALL = '{}有数据更新，新增确诊病例{}例，疑似病例{}例，目前共有确诊病例{}例，疑似病例{}例，死亡病例{}例，治愈病例{}例。'
 
-NO_NCOV_INFO = '{}暂无疫情信息'
+NO_NCOV_INFO = '{}暂无疫情信息，请检查地区名称是否正确。'
 
 INFO_TAIL = "若{}等地区数据有更新，我会在第一时间通知您！您也可以通过发送 '取消+地区名'取消关注该地区，比如'取消{}'，'取消全部'。"
 INFO_TAIL_ALL = "若全国的数据有更新，我会在第一时间通知您！您也可以通过发送'取消全部'取消对全部数据的关注。"

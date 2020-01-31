@@ -1,13 +1,15 @@
 # 微信疫情信息小助手（非官方）使用指南
 
-### 
+开发者请查看开发者手册（待完善中）[开发者手册](./developer.md)
 
 ### 简介
 
 基于itchat，使用个人微信账户，利用爬虫信息从网络上搜集实时疫情数据，用户通过微信消息进行订阅，若出现相关信息，则主动对用户进行推送。可根据用户指令监控群聊，对群内出现的新闻、分享、图片自动进行辟谣。
 ![](resource/image/online.jpg)
-
 > 图1 登陆成功之后的提醒
+
+github:[robot-personal](https://github.com/wuhan-support/robot-personal)
+
 
 ## 功能列表
 
@@ -26,7 +28,7 @@
 
 ### 3.群聊辟谣机器人
 
-针对指定的微信群（主要是针对家族群这种年龄跨度较大的群），检测聊天记录中的新闻(长段文字)、分享（标题）、图片，将该信息拿到腾讯辟谣平台上进行搜索，若为谣言或存疑，则返回辟谣链接。
+针对指定的微信群（主要是针对家族群这种年龄跨度较大的群），检测聊天记录中的新闻(长段文字)、分享（标题），将该信息拿到腾讯辟谣平台上进行搜索，若为谣言或存疑，则返回辟谣链接。为了保护隐私，不会保存任何聊天数据，不会上传任何数据到服务器（与微信服务器的正常通信除外）
 
 #### 数据来源
 
@@ -36,43 +38,35 @@
 
 - 1.订阅指定微信群
 - 2.检测聊天记录中的新闻(长段文字)、分享（标题）、图片
-- 3.对长文提取文本摘要(开源工具：[SnowNLP](http://www.52nlp.cn/tag/snownlp))
-- 4.识别图片的文字并提取摘要(开源工具：[tesseract](https://github.com/tesseract-ocr))
+- 3.对长文提取文本摘要(仅在开发者版本中支持，开源工具：[SnowNLP](http://www.52nlp.cn/tag/snownlp))
+- 4.识别图片的文字并提取摘要(仅在开发者版本中支持，开源工具：[tesseract](https://github.com/tesseract-ocr))
 - 5.在腾讯辟谣平台上进行搜索并返回结果
 
-## 运行环境
+### 4.群聊实时数据查询
 
-- 数据库：Redis
-- 部署：Docker/Docker-compose
-
-因为项目存在大量依赖，所以强烈建议您使用docker部署。
-
-## 运行方式
-
-### 1.Windows
-
-- 1.安装 [Python](https://www.python.org/downloads/)，[git](https://git-scm.com/downloads)，并[确保环境变量已配置](https://www.cnblogs.com/cnwuchao/p/10562416.html)，即在命令行CMD窗口下，输入python或git有正确提示
- 
-若未安装git，可直接在github下载ZIP
-
-![](resource/image/download.png)
-> 图2 github直接下载zip
-
-- 3.打开Powershell（cmd也行，不建议）,输入如下指令：
-
-```
-# 已下载zip的则跳过这一步
-git clone https://github.com/wuhan-support/robot-personal.git && cd robot-personal
-pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements.txt
-# 开始运行
-python StarRobot.py
-```
+- 接收群用户@并返回查询结果
 
 ### 使用方式
 
+#### 0.下载软件
+
+- 软件下载：
+
+	国内用户：[百度云](https://pan.baidu.com/s/1ZcZrBIqflHpmr2MkHLNYyA)
+	
+	国外用户：[谷歌Storage](https://drive.google.com/open?id=1UvB-ICQNvlCHeqBOZ1Qp4fNZisRt5L2d)
+
+
 #### 1.登陆
 
-二维码会打印在控制台上，扫码登陆成功后，文件传输助手会收到登陆成功的消息（如图2）。
+在软件根目录下双击StartRobot.exe（Mac上为StartRobot）开始运行，
+
+![](./resource/image/login.png)
+会弹出一个二维码，该二维码是微信网页版登陆的二维码
+
+如果您的微信扫码后提示“为了您的安全，无法登陆微信网页版”等字样，则您无法使用本软件。
+
+扫码登陆成功后，文件传输助手会收到登陆成功的消息（如图2）。
 
 向文件传入助手发送Help/帮助可以获得帮助信息（如图3-左）
 
@@ -101,12 +95,18 @@ python StarRobot.py
 
 ![](./resource/image/p4.jpg)
 
->图5：开启辟谣和停止辟谣
+>图5：（左）开启辟谣 （中）停止辟谣 （右）实时查询
+
+#### 4.群聊里查询实时数据
+
+群聊普通用户发送：@机器人查城市，比如@机器人查北京，则返回北京的疫情信息，如图5（右）。
 
 ### 使用注意
 
 1.本项目本质上是模拟网页版微信的操作，所以使用前请确保您的账号能登陆网页版微信。
 
-2.给同一人发送的类似的信息过多时，新发送的信息会无法送达，必须要该用户主动响应一下才行。这是微信的限制，很难解决。
+2.给同一人发送的类似的信息过多时，新发送的信息会无法送达，必须要该用户主动响应一下才行。这是好像是微信的限制，很难解决。
 
 3.本项目频繁使用之后可能会造成您无法无法登陆网页版微信。
+
+4.账号重新登陆之后之前的订阅会失效（短时间内重新热登陆不会），会在以后的版本中解决该问题
