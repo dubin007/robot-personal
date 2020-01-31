@@ -24,7 +24,7 @@ ocr = Image2Title(topK=5)
 if USE_REDIS:
     conn = connect_redis()
 else:
-    conn = SQLiteConnect(BASE_DIR + 'sqlite.db')
+    conn = SQLiteConnect(os.path.join(BASE_DIR, 'sqlite.db'))
 
 @itchat.msg_register([TEXT])
 def text_reply(msg):

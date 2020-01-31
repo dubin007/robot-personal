@@ -40,3 +40,4 @@ def check_should_update(conn):
 def check_dir_exist(dir):
     if os.path.exists(dir) == False:
         os.makedirs(dir)
+

@@ -1,3 +1,4 @@
+import os
 import random
 import re
 import time
@@ -76,7 +77,8 @@ def get_all_order_area(conn):
     if USE_REDIS:
         all_order_area = conn.smembers(ORDER_KEY)
     else:
-        all_order_area = []
+        all_order_area = conn.get_all_area()
+    return all_order_area
 
 def user_unsubscribe_multi_redis(conn, user, area, jieba):
     """
@@ -187,7 +189,7 @@ def do_ncov_update(itchat, debug=True):
     if USE_REDIS:
         conn = connect_redis()
     else:
-        conn = SQLiteConnect(BASE_DIR + 'sqlite.db')
+        conn = SQLiteConnect(os.path.join(BASE_DIR, 'sqlite.db'))
     try:
         while True:
             if USE_REDIS:

@@ -1,3 +1,5 @@
+import os
+
 import redis
 from src.util.constant import REDIS_HOST, STATE_NCOV_INFO, REDIS_HOST_DOCKER, USE_REDIS, DATA_DIR
 import json
@@ -39,14 +41,16 @@ def save_json_info(conn, key, data):
     if USE_REDIS:
         conn.rpush(key, json.dumps(data, ensure_ascii=False))
     else:
-        with open(DATA_DIR + key + ".json", 'w', encoding='utf-8') as w:
+        path = os.path.join(DATA_DIR, key + ".json")
+        with open(path, 'w', encoding='utf-8') as w:
             json.dump(data, w, ensure_ascii=False)
 
 def save_json_info_as_key(conn, key, data):
     if USE_REDIS:
         conn.set(key, json.dumps(data, ensure_ascii=False))
     else:
-        with open(DATA_DIR + key + ".json", 'w', encoding='utf-8') as w:
+        path = os.path.join(DATA_DIR, key + ".json")
+        with open(path, 'w', encoding='utf-8') as w:
             json.dump(data, w, ensure_ascii=False)
 
 def load_last_info(conn):
@@ -60,7 +64,8 @@ def load_last_info(conn):
         return last
     else:
         try:
-            with open(DATA_DIR + STATE_NCOV_INFO + ".json", 'r', encoding='utf-8') as r:
+            path = os.path.join(DATA_DIR, STATE_NCOV_INFO + ".json")
+            with open(path, 'r', encoding='utf-8') as r:
                 data = json.load(r)
             return data
         except BaseException as e:

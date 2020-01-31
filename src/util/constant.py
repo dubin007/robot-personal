@@ -35,8 +35,8 @@ UN_REGIST_PATTERN2 = '^取关|取消(关注)?'
 
 ### REG PAttern End
 
-BASE_DIR = os.path.join(BASE_PATH + '/resource/')
-DATA_DIR = os.path.join(BASE_DIR + 'data/')
+BASE_DIR = os.path.join(BASE_PATH, 'resource')
+DATA_DIR = os.path.join(BASE_DIR, 'data')
 # for localhost redis
 REDIS_HOST = '127.0.0.1'
 ## for docker redis

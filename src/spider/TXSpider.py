@@ -25,12 +25,12 @@ class TXSpider():
         else:
             self.re = None
         self.debug = debug
-        self.sqlc = SQLiteConnect(BASE_DIR + "sqlite.db")
+        self.sqlc = SQLiteConnect(os.path.join(BASE_DIR, "sqlite.db"))
         self.check_dirs()
 
     def check_dirs(self):
         check_dir_exist(DATA_DIR)
-        check_dir_exist(os.path.join(BASE_DIR + "download_image/"))
+        check_dir_exist(os.path.join(os.path.join(BASE_DIR, "download_image")))
 
     def main(self):
         """
@@ -86,7 +86,8 @@ class TXSpider():
             if USE_REDIS:
                 old_update_city = json.loads(self.re.get(UPDATE_CITY))
             else:
-                with open(DATA_DIR + UPDATE_CITY + ".json", 'r', encoding='utf-8') as r:
+                file = os.path.join(DATA_DIR, UPDATE_CITY + ".json")
+                with open(file, 'r', encoding='utf-8') as r:
                     old_update_city = json.load(r)
             return old_update_city
         except BaseException as e:
