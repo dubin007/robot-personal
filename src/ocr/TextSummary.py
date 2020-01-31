@@ -10,9 +10,22 @@ def __preprocessing(text):
     text = text.replace("\"", "").replace("\'", "").replace("“", "").replace("”", "")
     return text
 
+def get_text_list(text):
+    dot = ['。', '，', '；', '！', '：', '“', '!', ':', '.', ';', '\"']
+    for d in dot:
+        text = text.replace(d, '--')
+    text_list = text.split('--')
+    new_text_list = list(filter(lambda x: len(x) >= 10, text_list))
+    if len(new_text_list) > 0:
+        return new_text_list[0]
+    else:
+        return text_list[0]
+
 def get_text_summary(text, topK=5):
-    text = __preprocessing(text)
-    return [text[:20]]
+    # text = __preprocessing(text)
+    text = get_text_list(text)
+    print(text)
+    return [text]
     # s = SnowNLP(text)
     # topK_titles = s.summary(topK)
     # return topK_titles
