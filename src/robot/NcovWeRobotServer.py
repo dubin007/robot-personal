@@ -20,6 +20,12 @@ import jieba
 import threading
 from src.spider.SpiderServer import start_tx_spider
 
+ocr = Image2Title(topK=5)
+if USE_REDIS:
+    conn = connect_redis()
+else:
+    conn = SQLiteConnect(BASE_DIR + 'sqlite.db')
+
 @itchat.msg_register([TEXT])
 def text_reply(msg):
     try:
@@ -173,7 +179,10 @@ def init_jieba():
         jieba.add_word(words)
     return jieba
 
+jieba = init_jieba()
+
 def start_server():
+
     # 在不同的终端上，需要调整CMDQR的值
     # itchat.auto_login(True, enableCmdQR=2)
     itchat.auto_login(True)
@@ -181,19 +190,12 @@ def start_server():
     p1 = threading.Thread(target=start_tx_spider)
     p1.start()
     ls.logging.info("begin to start ncov update")
-    p2 = threading.Thread(target=do_ncov_update, args=[conn, itchat, False])
+    p2 = threading.Thread(target=do_ncov_update, args=[itchat, False])
     p2.start()
     itchat.send(ONLINE_TEXT, toUserName=FILE_HELPER)
     myself = itchat.search_friends()
     restore_group(conn, itchat, myself['NickName'])
     itchat.run(True)
 
-
 if __name__ == '__main__':
-    ocr = Image2Title(topK=5)
-    if USE_REDIS:
-        conn = connect_redis()
-    else:
-        conn = SQLiteConnect(BASE_DIR + 'sqlite.db')
-    jieba = init_jieba()
     start_server()

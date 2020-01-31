@@ -54,7 +54,7 @@ class SQLiteConnect:
             res = self.conn.execute(update)
             return res.rowcount
         except BaseException as e:
-            ls.logging.error("更新update flag出错")
+            ls.logging.error("ERROR: 更新update flag出错")
             ls.logging.exception(e)
             return 0
 
@@ -65,7 +65,7 @@ class SQLiteConnect:
             result = result_proxy.fetchone()
             return result[1]
         except BaseException as e:
-            ls.logging.error("获取update flag 出错")
+            ls.logging.error("RROR: 获取update flag 出错")
             ls.logging.exception(e)
             return 0
 
@@ -141,13 +141,16 @@ class SQLiteConnect:
                 return res.rowcount
             else:
                 update = db.update(self.group_name).where(
-                    db.and_(uid=uid, gname=gname)).values(gid=gid)
+                    db.and_(
+                        self.group_name.columns.uid == uid,
+                        self.group_name.columns.gname == gname
+                    )).values(gid=gid)
                 res = self.conn.execute(update)
                 return res.rowcount
         except BaseException as e:
             ls.logging.error("关注{}的群聊{}失败".format(uid, gname))
             ls.logging.exception(e)
-            return 0
+            return -1
 
     def query_group_for_user(self, uid, gname):
         """
