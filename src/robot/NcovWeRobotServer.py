@@ -121,6 +121,11 @@ def text_reply(msg):
         if len(city) < 2:
             return
         city = city[1].strip()
+        if len(city) > 10:
+            return
+        if city == '水表':
+            itchat.send("水表在门外，请自便！", toUserName=msg.user.UserName)
+            return
         if city == '':
             itchat.send("您想查啥？", toUserName=msg.user.UserName)
             return

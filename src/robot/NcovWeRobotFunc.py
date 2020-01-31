@@ -194,7 +194,8 @@ def get_ncvo_info_with_city(conn, citys, group=False):
                 ncov.append(FIRST_NCOV_INFO.format(info['city'], info['confirm'], info['dead'], info['heal']))
                 if group:
                     today_info = get_today_push_info(info)
-                    ncov.append(today_info)
+                    if len(today_info) > 0:
+                        ncov.append(today_info)
 
             else:
                 ncov.append(NO_NCOV_INFO.format(city))
