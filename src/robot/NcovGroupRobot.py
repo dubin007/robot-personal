@@ -64,10 +64,6 @@ def identify_news(text_list, itchat, group_name):
         itchat.send(reply, group_name)
         time.sleep(SEND_SPLIT)
 
-def parse_identify_res(text, source):
-    reply_text = 'em...这个{}可能是{}，详细的情况是: {}。点这里看详细的报道:{}'.format(text[0:20], source['result'].split('-')[1], source['abstract'], source['oriurl'])
-    return reply_text
-
 def restore_group(conn, itchat, user):
     if USE_REDIS:
         conn.delete(USER_FOCUS_GROUP)

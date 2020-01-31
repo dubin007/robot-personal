@@ -1,9 +1,10 @@
 from urllib import parse
 import requests
 
-from src.robot.NcovGroupRobot import parse_identify_res
 from src.util.log import LogSupport
 import json
+
+from src.util.util import parse_identify_res
 
 ls = LogSupport()
 def get_identify_url(title):
