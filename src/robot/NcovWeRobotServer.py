@@ -121,11 +121,14 @@ def text_reply(msg):
         if len(city) < 2:
             return
         city = city[1].strip()
+        if city == '':
+            itchat.send("您想查啥？", toUserName=msg.user.UserName)
+            return
         if city == '朝阳':
             itchat.send(CHAOYANG_INFO, toUserName=msg.user.UserName)
             return
         city = find_true_name_for_city(conn, city)
-        push_info = get_ncvo_info_with_city(conn, [city])
+        push_info = get_ncvo_info_with_city(conn, [city], True)
         itchat.send(push_info + get_random_tail(), toUserName=msg.user.UserName)
         return
     # 筛掉过短的长文和重复字段过多的长文

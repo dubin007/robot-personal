@@ -176,7 +176,7 @@ def user_unsubscribe_multi_sqlite(conn, user, area, jieba):
     return unsubscribe_list, unsubscribe_list_fail
 
 
-def get_ncvo_info_with_city(conn, citys):
+def get_ncvo_info_with_city(conn, citys, group=False):
     """
     根据传入的城市列表获取疫情信息
     :param conn: redis连接
@@ -192,6 +192,10 @@ def get_ncvo_info_with_city(conn, citys):
             if city in last:
                 info = last[city]
                 ncov.append(FIRST_NCOV_INFO.format(info['city'], info['confirm'], info['dead'], info['heal']))
+                if group:
+                    today_info = get_today_push_info(info)
+                    ncov.append(today_info)
+
             else:
                 ncov.append(NO_NCOV_INFO.format(city))
         return "；".join(ncov)
@@ -306,6 +310,18 @@ def construct_push_info(city):
     push_info = list(filter(lambda x: len(x) > 0, [confirm, suspect, heal, dead]))
     push_info_str += "、".join(push_info) + "。"
     push_info_str += get_random_tail()
+    return push_info_str
+
+def get_today_push_info(city):
+    push_info_str = ''
+    today = '今日{}共累计新增'.format(city['city'])
+    t_confirm = '确诊病例{}例'.format(city['t_confirm']) if city['t_confirm'] > 0 else ''
+    t_suspect = '疑似病例{}例'.format(city['t_suspect']) if city['t_suspect'] > 0 else ''
+    t_heal = '治愈病例{}例'.format(city['t_heal']) if city['t_heal'] > 0 else ''
+    t_dead = '死亡病例{}例'.format(city['t_dead']) if city['t_dead'] > 0 else ''
+    push_info = list(filter(lambda x: len(x) > 0, [t_confirm, t_suspect, t_heal, t_dead]))
+    if len(push_info) > 0:
+        push_info_str += today + "、".join(push_info) + "；"
     return push_info_str
 
 def check_help(text):
