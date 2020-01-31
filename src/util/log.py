@@ -21,7 +21,7 @@ class LogSupport(object):
         check_dir_exist(logging_dir)
         logger = logging.getLogger('log')
         logger.setLevel(logging.INFO)
-        log_path = logging_dir + get_now_time() + ".log"
+        log_path = os.path.join(logging_dir, get_now_time() + ".log")
         # 存在bug，无法按天分割
         # 参考博客：https://blog.csdn.net/weixin_38107388/article/details/90639151
         # fh = logging.handlers.TimedRotatingFileHandler(logging_dir + 'support', when='S', backupCount=5, encoding='utf-8')

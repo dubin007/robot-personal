@@ -1,7 +1,7 @@
 import itchat
 import os
 import sys
-
+import platform
 curPath = os.path.abspath(os.path.dirname(__file__))
 rootPath = os.path.split(curPath)[0]
 BASE_PATH = os.path.split(rootPath)[0]
@@ -177,11 +177,12 @@ def judge_whether_foucs_group(conn, user, group):
         return group in set(conn.query_all_group_id_for_user(user))
 
 def init_jieba():
-    all_area = conn.get_all_area()
-    if len(all_area) == 0:
-        ls.logging.error("尚无地区信息")
-    for words in all_area:
-        jieba.add_word(words)
+    if platform.system() != 'Windows':
+        all_area = conn.get_all_area()
+        if len(all_area) == 0:
+            ls.logging.error("尚无地区信息")
+        for words in all_area:
+            jieba.add_word(words)
     return jieba
 
 jieba = init_jieba()
