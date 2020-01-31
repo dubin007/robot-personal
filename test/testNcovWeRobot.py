@@ -144,7 +144,7 @@ class testNcovWeRobot(unittest.TestCase):
     def test_start_server(self):
         succ, failed = user_subscribe(self.sp.re, 'filehelper', '订阅全国', jieba)
         assert len(succ) == 1
-        p = threading.Thread(target=self.save_data_loop)
+        p = threading.Thread(target=self.test_save_data_loop)
         p.start()
         start_server()
 

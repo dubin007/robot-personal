@@ -195,6 +195,7 @@ def do_ncov_update(itchat, debug=True):
                 should_update = 0 if should_update == None else should_update
             else:
                 should_update = conn.get_update_flag()
+            ls.logging.info("update flag:{}".format(should_update))
             if should_update == 1:
                 update_city = get_update_city(conn)
                 if not update_city:
