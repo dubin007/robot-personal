@@ -3,11 +3,12 @@ import re
 import time
 
 from src.util.constant import ALL_AREA_KEY, AREA_TAIL, FIRST_NCOV_INFO, NO_NCOV_INFO, ORDER_KEY, UN_REGIST_PATTERN, \
-    UN_REGIST_PATTERN2, SHOULD_UPDATE, UPDATE_CITY, USE_REDIS, DATA_DIR
+    UN_REGIST_PATTERN2, SHOULD_UPDATE, UPDATE_CITY, USE_REDIS, DATA_DIR, BASE_DIR
 from src.util.log import LogSupport
-from src.util.redis_config import load_last_info
+from src.util.redis_config import load_last_info, connect_redis
 import json
 
+from src.util.sqlite_config import SQLiteConnect
 from src.util.util import get_random_tail, get_random_split, get_random_long_time
 
 ls = LogSupport()
@@ -181,8 +182,12 @@ def restore_we_friend(conn, itchat):
     for user in all_users:
         itchat.add_friend(userName=user)
 
-def do_ncov_update(conn, itchat, debug=True):
+def do_ncov_update(itchat, debug=True):
     ls.logging.info("thread do ncov update info start success-----")
+    if USE_REDIS:
+        conn = connect_redis()
+    else:
+        conn = SQLiteConnect(BASE_DIR + 'sqlite.db')
     try:
         while True:
             if USE_REDIS:
