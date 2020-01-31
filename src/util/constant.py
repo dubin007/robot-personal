@@ -57,12 +57,12 @@ INFO4 = '\n为了保证您能持续最新的疫情消息，根据WX的规则，�
 INFO5 = '\n全部数据来源于腾讯实时疫情追踪平台：https://news.qq.com//zt2020/page/feiyan.htm'
 INFO6 = '\n我们是公益组织wuhan.support，网址 https://feiyan.help'
 INFO7 = '\n这里是面向疫区内外民众和医疗机构的多维度信息整合平台，https://feiyan.help'
-INFO8 = '\nhttps://app.feiyan.help，支持武汉，我们在一起。'
+INFO8 = '\nhttps://feiyan.help，支持武汉，我们在一起。'
 INFO9 = '\n开源地址：https://github.com/wuhan-support，支持武汉，我们在一起。'
 INFO10 = '\n查看更多信息可以戳这里，https://feiyan.help。'
 INFO11 = '\n这是一个为了避免微信阻塞消息的随机小尾巴...'
 INFO12 = '\n众志成城，抵御疫情，武汉加油！'
-INFO13 = '\nhttps://app.feiyan.help，筑牢抵御疫情蔓延的一道屏障'
+INFO13 = '\nhttps://feiyan.help，筑牢抵御疫情蔓延的一道屏障'
 
 INFO_TAILS = [INFO1, INFO2, INFO3, INFO4, INFO5, INFO6, INFO7, INFO8, INFO9, INFO10, INFO11, INFO12, INFO13]
 
