@@ -10,5 +10,7 @@ if __name__=='__main__':
     print("不会保存任何聊天记录，疫情信息和疫情订阅信息会存在您的本地")
     print("但仍然存在一定的安全风险，比如频繁使用可能会造成您最终无法登陆网页版微信")
     print("请务必谨慎使用！！！")
+    print("本项目代码开源，开源地址：https://github.com/wuhan-support/robot-personal")
+    print("支持武汉，我们在一起，https://app.feiyan.help")
     time.sleep(5)
     start_server()
