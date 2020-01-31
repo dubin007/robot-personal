@@ -1,3 +1,4 @@
+import os
 import unittest
 
 from src.util.constant import BASE_DIR
@@ -7,7 +8,7 @@ from src.util.sqlite_config import SQLiteConnect
 class TestSqlite(unittest.TestCase):
 
     def setUp(self) -> None:
-        self.sqlc = SQLiteConnect(BASE_DIR + "sqlite.db")
+        self.sqlc = SQLiteConnect(os.path.join(BASE_DIR, "sqlite.db"))
 
     def test_init_sqlite(self):
         pass

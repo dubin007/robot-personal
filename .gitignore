@@ -12,4 +12,3 @@ sqlite.db
 resource/data/*
 build
 dist
-*.spec

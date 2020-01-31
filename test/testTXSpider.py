@@ -1,10 +1,12 @@
 import json
+import os
 import unittest
 from src.spider.TXSpider import TXSpider
 import re
 
-from src.util.constant import AREA_TAIL, ALL_AREA_KEY
+from src.util.constant import AREA_TAIL, ALL_AREA_KEY, BASE_DIR
 from src.util.redis_config import connect_redis
+from src.util.util import check_dir_exist
 
 
 class testNcovWeRobot(unittest.TestCase):
@@ -112,3 +114,8 @@ class testNcovWeRobot(unittest.TestCase):
     def test_get_all_area(self):
         conn = connect_redis()
         all_area = set(conn.smembers(ALL_AREA_KEY))
+
+    def test_check_dir(self):
+        path1 = os.path.join(BASE_DIR, 'test1')
+        check_dir_exist(path1)
+        pass

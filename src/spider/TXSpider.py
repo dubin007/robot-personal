@@ -20,13 +20,17 @@ class TXSpider():
         """
         self.req = requests.Session()
         self.log = LogSupport()
-        self.re = connect_redis()
+        if USE_REDIS:
+            self.re = connect_redis()
+        else:
+            self.re = None
         self.debug = debug
-        self.sqlc = SQLiteConnect(BASE_DIR + "sqlite.db")
+        self.sqlc = SQLiteConnect(os.path.join(BASE_DIR, "sqlite.db"))
+        self.check_dirs()
 
     def check_dirs(self):
         check_dir_exist(DATA_DIR)
-        check_dir_exist(os.path.join(BASE_DIR + "/download_image/"))
+        check_dir_exist(os.path.join(os.path.join(BASE_DIR, "download_image")))
 
     def main(self):
         """
@@ -65,8 +69,9 @@ class TXSpider():
                         self.sqlc.do_update_flag(1)
                 # 如果上一次的数据还没推出去，要先合并新增数据
                 elif should_update == 1:
-                    old_update_city = json.loads(self.re.get(UPDATE_CITY))
-                    update_city = self.merge_update_city(old_city_list=old_update_city, new_city_list=update_city)
+                    old_update_city = self.get_old_data_city()
+                    if old_update_city != None:
+                        update_city = self.merge_update_city(old_city_list=old_update_city, new_city_list=update_city)
                 save_json_info_as_key(self.re, UPDATE_CITY, update_city)
                 self.log.logging.info("set update city {}".format(json.dumps(update_city)[:20]))
             else:
@@ -75,6 +80,20 @@ class TXSpider():
 
         except BaseException as e:
             self.log.logging.exception(e)
+
+    def get_old_data_city(self):
+        try:
+            if USE_REDIS:
+                old_update_city = json.loads(self.re.get(UPDATE_CITY))
+            else:
+                file = os.path.join(DATA_DIR, UPDATE_CITY + ".json")
+                with open(file, 'r', encoding='utf-8') as r:
+                    old_update_city = json.load(r)
+            return old_update_city
+        except BaseException as e:
+            self.log.logging.error("Error: failed to load old update city")
+            self.log.logging.exception(e)
+            return None
 
     def merge_update_city(self, new_city_list, old_city_list):
         final_result = []

@@ -1,7 +1,7 @@
 import itchat
 import os
 import sys
-
+import platform
 curPath = os.path.abspath(os.path.dirname(__file__))
 rootPath = os.path.split(curPath)[0]
 BASE_PATH = os.path.split(rootPath)[0]
@@ -12,7 +12,7 @@ from src.util.util import check_image, check_identify, remove_image, get_random_
 from itchat.content import *
 from src.robot.NcovWeRobotFunc import *
 from src.util.constant import INFO_TAIL, INFO_TAIL_ALL, FOCUS_TAIL, HELP_CONTENT, \
-    GROUP_CONTENT_HELP, ONLINE_TEXT, FILE_HELPER, CHAOYANG_INFO
+    GROUP_CONTENT_HELP, ONLINE_TEXT, FILE_HELPER, CHAOYANG_INFO, NO_GROUP_CONTENT_HELP
 from src.util.redis_config import connect_redis
 from src.robot.NcovGroupRobot import *
 
@@ -24,7 +24,7 @@ ocr = Image2Title(topK=5)
 if USE_REDIS:
     conn = connect_redis()
 else:
-    conn = SQLiteConnect(BASE_DIR + 'sqlite.db')
+    conn = SQLiteConnect(os.path.join(BASE_DIR, 'sqlite.db'))
 
 @itchat.msg_register([TEXT])
 def text_reply(msg):
@@ -105,14 +105,15 @@ def text_reply(msg):
                 if len(groups) > 0:
                     itchat.send(GROUP_CONTENT_HELP.format("，".join(groups)), toUserName=FILE_HELPER)
                 else:
-                    itchat.send()
+                    itchat.send(NO_GROUP_CONTENT_HELP, toUserName=FILE_HELPER)
     except BaseException as e:
         ls.logging.exception(e)
 
 
 @itchat.msg_register([TEXT, NOTE], isGroupChat=True)
 def text_reply(msg):
-    if msg['FromUserName'] == itchat.originInstance.storageClass.userName and msg['ToUserName'] != 'filehelper':
+    if msg.isAt:
+        msg.user.send("干啥啊")
         return
     # 筛掉过短的长文和重复字段过多的长文
     if len(msg.text) < 50 or len(set(msg.text)) < 20:
@@ -156,16 +157,17 @@ def text_reply(msg):
     if not judge_whether_foucs_group(conn, itchat.originInstance.storageClass.nickName, msg['FromUserName']):
         return
     if check_image(msg.fileName):
-        msg.download(msg.fileName)
-        # new_file = os.path.join(BASE_DIR, 'download_image/') + msg.fileName
-        text_list = ocr(msg.fileName)
-        # 删除图片
-        remove_image(msg.fileName)
-        # 带有辟谣等字眼的信息直接返回
-        if len(text_list) == 0 or check_identify("".join(text_list)):
-            return
-        text_list = list(filter(lambda x: len(x) > 10, text_list))
-        identify_news(text_list, itchat, msg['FromUserName'])
+        return
+        # msg.download(msg.fileName)
+        # # new_file = os.path.join(BASE_DIR, 'download_image/') + msg.fileName
+        # text_list = ocr(msg.fileName)
+        # # 删除图片
+        # remove_image(msg.fileName)
+        # # 带有辟谣等字眼的信息直接返回
+        # if len(text_list) == 0 or check_identify("".join(text_list)):
+        #     return
+        # text_list = list(filter(lambda x: len(x) > 10, text_list))
+        # identify_news(text_list, itchat, msg['FromUserName'])
 
 def judge_whether_foucs_group(conn, user, group):
     # 判断是在否在关注的群列表里
@@ -175,11 +177,12 @@ def judge_whether_foucs_group(conn, user, group):
         return group in set(conn.query_all_group_id_for_user(user))
 
 def init_jieba():
-    all_area = conn.get_all_area()
-    if len(all_area) == 0:
-        ls.logging.error("尚无地区信息")
-    for words in all_area:
-        jieba.add_word(words)
+    if platform.system() != 'Windows':
+        all_area = conn.get_all_area()
+        if len(all_area) == 0:
+            ls.logging.error("尚无地区信息")
+        for words in all_area:
+            jieba.add_word(words)
     return jieba
 
 jieba = init_jieba()

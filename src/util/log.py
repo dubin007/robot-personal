@@ -8,18 +8,20 @@ from src.util.util import check_dir_exist
 class LogSupport(object):
 
     debug = False
+    logging = None
     def __init__(self):
-        self.logging = self.init_log()
+        if not self.logging:
+            self.logging = self.init_log()
         self.logging_info("-init logging module success")
 
     def init_log(self):
-        logging_dir = os.path.join(BASE_DIR, "logs/")
+        logging_dir = os.path.join(BASE_DIR, "logs")
         if self.debug:
             print("logging_dir:", logging_dir)
         check_dir_exist(logging_dir)
         logger = logging.getLogger('log')
         logger.setLevel(logging.INFO)
-        log_path = logging_dir + get_now_time() + ".log"
+        log_path = os.path.join(logging_dir, get_now_time() + ".log")
         # 存在bug，无法按天分割
         # 参考博客：https://blog.csdn.net/weixin_38107388/article/details/90639151
         # fh = logging.handlers.TimedRotatingFileHandler(logging_dir + 'support', when='S', backupCount=5, encoding='utf-8')

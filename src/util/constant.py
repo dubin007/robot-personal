@@ -35,8 +35,8 @@ UN_REGIST_PATTERN2 = '^取关|取消(关注)?'
 
 ### REG PAttern End
 
-BASE_DIR = BASE_PATH + '/resource/'
-DATA_DIR = BASE_DIR + '/data/'
+BASE_DIR = os.path.join(BASE_PATH, 'resource')
+DATA_DIR = os.path.join(BASE_DIR, 'data')
 # for localhost redis
 REDIS_HOST = '127.0.0.1'
 ## for docker redis
@@ -72,7 +72,7 @@ NO_NCOV_INFO = '{}暂无疫情信息'
 INFO_TAIL = "若{}等地区数据有更新，我会在第一时间通知您！您也可以通过发送 '取消+地区名'取消关注该地区，比如'取消{}'，'取消全部'。"
 INFO_TAIL_ALL = "若全国的数据有更新，我会在第一时间通知您！您也可以通过发送'取消全部'取消对全部数据的关注。"
 
-FOCUS_TAIL = "如果该群转发的新闻、截图或链接有谣言，将会自动发送辟谣链接！您也可以通过发送'停止辟谣+群名'取消对该群的谣言检查。"
+FOCUS_TAIL = "如果该群转发的新闻、分享存在谣言，将会自动发送辟谣链接！您也可以通过发送'停止辟谣+群名'取消对该群的谣言检查。"
 CHAOYANG_INFO = '您的订阅"朝阳"有些模糊，如果您想订阅北京朝阳区，请输入订阅朝阳区，如果想订阅辽宁省朝阳市，请输入订阅朝阳市'
 TIME_SPLIT = 60 * 3
 
@@ -85,7 +85,7 @@ SEND_SPLIT = random.random() * 10
 SEND_SPLIT_SHORT = random.random() * 5
 
 HELP_CONTENT = "您好！这是微信疫情信息小助手（非官方）！我有以下功能：发送 订阅/取消+地区名 关注/取消该地区疫情；" \
-               "发送辟谣+群名，将对该群的新闻长文、链接分享、截图自动进行辟谣，使用停止辟谣+群名停止该功能。发送\"CX\"可查询已关注的群聊。" \
+               "发送辟谣+群名，将对该群的新闻长文、链接分享自动进行辟谣，使用停止辟谣+群名停止该功能。发送\"CX\"可查询已关注的群聊。" \
                "以上所有数据来自腾讯\"疫情实时追踪\"平台，链接：https://news.qq.com//zt2020/page/feiyan.htm"
 
 GROUP_CONTENT_HELP = "您对这些群启用了辟谣功能：{}。若发现漏掉了一些群，请将该群保存到通讯录再重新发送辟谣+群名。"

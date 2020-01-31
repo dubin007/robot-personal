@@ -1,3 +1,5 @@
+import os
+import platform
 import random
 import re
 import time
@@ -37,8 +39,11 @@ def user_subscribe(conn, user, area, jieba):
     # 全国有两个地方叫朝阳
     if area == '朝阳':
         return succ_subscribe, ['朝阳']
-    area_list = jieba.cut(area)
-    area_list = list(filter(lambda x: len(x) > 1, area_list))
+    if platform.system() != 'Windows':
+        area_list = list(jieba.cut(area))
+        area_list = list(filter(lambda x: len(x) > 1, area_list))
+    else:
+        area_list = [area]
     tails = ['省', '市', '区', '县','州','自治区', '自治州', '']
 
     for ar in area_list:
@@ -76,7 +81,8 @@ def get_all_order_area(conn):
     if USE_REDIS:
         all_order_area = conn.smembers(ORDER_KEY)
     else:
-        all_order_area = []
+        all_order_area = conn.get_all_area()
+    return all_order_area
 
 def user_unsubscribe_multi_redis(conn, user, area, jieba):
     """
@@ -97,7 +103,10 @@ def user_unsubscribe_multi_redis(conn, user, area, jieba):
         unsubscribe_list.append("全部")
         return unsubscribe_list, unsubscribe_list_fail
     area = re.subn(UN_REGIST_PATTERN2, '', area)[0]
-    area_list = jieba.cut(area)
+    if platform.system() != 'Windows':
+        area_list = list(jieba.cut(area))
+    else:
+        area_list = list(area)
     for ar in area_list:
         flag = False
         ar = re.subn(AREA_TAIL, '', ar)[0]
@@ -137,7 +146,10 @@ def user_unsubscribe_multi_sqlite(conn, user, area, jieba):
         conn.cancel_all_subscription(user)
         unsubscribe_list.append('全部')
     else:
-        area_list = jieba.cut(area)
+        if platform.system() != 'Windows':
+            area_list = list(jieba.cut(area))
+        else:
+            area_list = [area]
         for area in area_list:
             res = conn.cancel_subscription(user, area)
             if res > 0:
@@ -187,7 +199,7 @@ def do_ncov_update(itchat, debug=True):
     if USE_REDIS:
         conn = connect_redis()
     else:
-        conn = SQLiteConnect(BASE_DIR + 'sqlite.db')
+        conn = SQLiteConnect(os.path.join(BASE_DIR, 'sqlite.db'))
     try:
         while True:
             if USE_REDIS:
