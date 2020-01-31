@@ -59,7 +59,10 @@ class TXSpider():
             if len(update_city) > 0:
                 save_json_info(self.re, STATE_NCOV_INFO, now_data)
                 if should_update == 0:
-                    self.re.set(SHOULD_UPDATE, 1)
+                    if USE_REDIS:
+                        self.re.set(SHOULD_UPDATE, 1)
+                    else:
+                        self.sqlc.do_update_flag(1)
                 # 如果上一次的数据还没推出去，要先合并新增数据
                 elif should_update == 1:
                     old_update_city = json.loads(self.re.get(UPDATE_CITY))

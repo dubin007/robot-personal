@@ -102,7 +102,10 @@ def text_reply(msg):
                     groups = list(conn.smembers(USER_FOCUS_GROUP_NAME))
                 else:
                     groups = conn.query_all_group_for_user(nickname)
-                itchat.send(GROUP_CONTENT_HELP.format("，".join(groups)), toUserName=FILE_HELPER)
+                if len(groups) > 0:
+                    itchat.send(GROUP_CONTENT_HELP.format("，".join(groups)), toUserName=FILE_HELPER)
+                else:
+                    itchat.send()
     except BaseException as e:
         ls.logging.exception(e)
 

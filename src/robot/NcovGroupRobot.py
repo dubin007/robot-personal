@@ -65,7 +65,7 @@ def identify_news(text_list, itchat, group_name):
         time.sleep(SEND_SPLIT)
 
 def parse_identify_res(text, source):
-    reply_text = '这个{}是{}，真实情况是: {}。不信的话你可以点这里看详情:{}'.format(text[0:15], source['result'], source['abstract'], source['oriurl'])
+    reply_text = 'em...这个{}可能是{}，详细的情况是: {}。点这里看详细的报道:{}'.format(text[0:20], source['result'].split('-')[1], source['abstract'], source['oriurl'])
     return reply_text
 
 def restore_group(conn, itchat, user):
