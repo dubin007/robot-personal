@@ -141,13 +141,16 @@ class SQLiteConnect:
                 return res.rowcount
             else:
                 update = db.update(self.group_name).where(
-                    db.and_(uid=uid, gname=gname)).values(gid=gid)
+                    db.and_(
+                        self.group_name.columns.uid == uid,
+                        self.group_name.columns.gname == gname
+                    )).values(gid=gid)
                 res = self.conn.execute(update)
                 return res.rowcount
         except BaseException as e:
             ls.logging.error("关注{}的群聊{}失败".format(uid, gname))
             ls.logging.exception(e)
-            return 0
+            return -1
 
     def query_group_for_user(self, uid, gname):
         """

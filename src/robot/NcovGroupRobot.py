@@ -26,7 +26,9 @@ def add_identify_group(conn, itchat, user, group):
             conn.sadd(USER_FOCUS_GROUP, chatroom_name)
             conn.sadd(USER_FOCUS_GROUP_NAME, group_name)
         else:
-            conn.add_group_for_user(user, chatroom_name, group_name)
+            res = conn.add_group_for_user(user, chatroom_name, group_name)
+            if res < 0:
+                failed.append(group_name)
         succ.append(group_name)
     else:
         failed.append(group_name)
