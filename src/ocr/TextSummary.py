@@ -24,7 +24,7 @@ def get_text_list(text):
 def get_text_summary(text, topK=5):
     # text = __preprocessing(text)
     text = get_text_list(text)
-    print(text)
+    # print(text)
     return [text]
     # s = SnowNLP(text)
     # topK_titles = s.summary(topK)

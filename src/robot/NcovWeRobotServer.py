@@ -132,7 +132,7 @@ def text_reply(msg):
         itchat.send(push_info + get_random_tail(), toUserName=msg.user.UserName)
         return
     # 筛掉过短的长文和重复字段过多的长文
-    if len(msg.text) < 40 or len(set(msg.text)) < 20:
+    if len(msg.text) < 50 or len(set(msg.text)) < 20:
         return
     # 带有辟谣等字眼的信息直接返回
     if check_identify(msg.text):
