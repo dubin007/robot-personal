@@ -39,7 +39,7 @@ def user_subscribe(conn, user, area, jieba):
     # 全国有两个地方叫朝阳
     if area == '朝阳':
         return succ_subscribe, ['朝阳']
-    if platform.system() != 'Windows':
+    if USE_REDIS:
         area_list = list(jieba.cut(area))
         area_list = list(filter(lambda x: len(x) > 1, area_list))
     else:
@@ -120,7 +120,7 @@ def user_unsubscribe_multi_redis(conn, user, area, jieba):
         unsubscribe_list.append("全部")
         return unsubscribe_list, unsubscribe_list_fail
     area = re.subn(UN_REGIST_PATTERN2, '', area)[0]
-    if platform.system() != 'Windows':
+    if USE_REDIS:
         area_list = list(jieba.cut(area))
     else:
         area_list = list(area)
@@ -164,7 +164,7 @@ def user_unsubscribe_multi_sqlite(conn, user, area, jieba):
         conn.cancel_all_subscription(user)
         unsubscribe_list.append('全部')
     else:
-        if platform.system() != 'Windows':
+        if USE_REDIS:
             area_list = list(jieba.cut(area))
         else:
             area_list = [area]

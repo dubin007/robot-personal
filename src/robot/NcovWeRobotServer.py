@@ -198,7 +198,7 @@ def judge_whether_foucs_group(conn, user, group):
         return group in set(conn.query_all_group_id_for_user(user))
 
 def init_jieba():
-    if platform.system() != 'Windows':
+    if USE_REDIS:
         all_area = conn.get_all_area()
         if len(all_area) == 0:
             ls.logging.error("尚无地区信息")

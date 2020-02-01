@@ -11,38 +11,11 @@
 github:[robot-personal](https://github.com/wuhan-support/robot-personal)
 
 
-## 功能列表
+### 数据来源
 
-### 1.爬虫模块
-
-- 1.定时从腾讯新闻获取全国疫情数据（地址:[https://news.qq.com/zt2020/page/feiyan.htm](https://news.qq.com/zt2020/page/feiyan.htm)）
-- 2.按城市/省份对数据进行存储并对比数据是否更新
-- 3.推送更新的数据到微信机器人
-- 4.根据用户设定的地区推送实时数据
-
-### 2.微信实时疫情推送模块
-
-- 1.接收用户订阅，包括省份/城市/关键词
-- 2.接收更新的数据并转发给订阅的用户
-- 3.取消订阅
-
-### 3.群聊辟谣机器人
-
-针对指定的微信群（主要是针对家族群这种年龄跨度较大的群），检测聊天记录中的新闻(长段文字)、分享（标题），将该信息拿到腾讯辟谣平台上进行搜索，若为谣言或存疑，则返回辟谣链接。为了保护隐私，不会保存任何聊天数据，不会上传任何数据到服务器（与微信服务器的正常通信除外）
-
-#### 数据来源
+腾讯实时疫情追踪平台，[https://news.qq.com/zt2020/page/feiyan.htm](https://news.qq.com/zt2020/page/feiyan.htm)）
 
 腾讯辟谣平台，URL：[https://news.qq.com/zt2020/page/feiyan.htm#rumor](https://news.qq.com/zt2020/page/feiyan.htm#rumor)
-
-#### 功能列表
-
-- 1.订阅指定微信群
-- 2.检测聊天记录中的新闻(长段文字)、分享（标题）、图片
-- 3.对长文提取文本摘要(仅在开发者版本中支持，开源工具：[SnowNLP](http://www.52nlp.cn/tag/snownlp))
-- 4.识别图片的文字并提取摘要(仅在开发者版本中支持，开源工具：[tesseract](https://github.com/tesseract-ocr))
-- 5.在腾讯辟谣平台上进行搜索并返回结果
-
-### 4.群聊实时数据查询
 
 - 接收群用户@并返回查询结果
 
