@@ -30,8 +30,8 @@ USER_FOCUS_GROUP_NAME = 'user_focus_group_name'
 
 ### Reg Pattern Begin
 
-UN_REGIST_PATTERN = '^取关|取消(关注)?.+'
-UN_REGIST_PATTERN2 = '^取关|取消(关注)?'
+UN_REGIST_PATTERN = '^取关|取消(订阅)?.+'
+UN_REGIST_PATTERN2 = '^取关|取消(订阅)?'
 
 ### REG PAttern End
 
@@ -46,7 +46,7 @@ LOGGING_FORMAT = '%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(mess
 
 AREA_TAIL = '(自治+)|省|市|县|区|镇'
 
-FIRST_NCOV_INFO = '{}目前有确诊病例{}例，死亡病例{}例，治愈病例{}例。'
+FIRST_NCOV_INFO = '{}目前有确诊病例{}例，死亡病例{}例，治愈病例{}例'
 
 FIRST_NCOV_INFO2 = '{}目前有确诊病例{}例，死亡病例{}例，治愈病例{}例。'
 

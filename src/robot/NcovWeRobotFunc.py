@@ -159,6 +159,7 @@ def user_unsubscribe_multi_sqlite(conn, user, area, jieba):
     """
     unsubscribe_list = []
     unsubscribe_list_fail = []
+    area = re.subn(UN_REGIST_PATTERN2, '', area)[0]
     if area.find("全部") != -1:
         conn.cancel_all_subscription(user)
         unsubscribe_list.append('全部')
@@ -322,7 +323,7 @@ def get_today_push_info(city):
     t_dead = '死亡病例{}例'.format(city['t_dead']) if city['t_dead'] > 0 else ''
     push_info = list(filter(lambda x: len(x) > 0, [t_confirm, t_suspect, t_heal, t_dead]))
     if len(push_info) > 0:
-        push_info_str += today + "、".join(push_info) + "；"
+        push_info_str += today + "、".join(push_info)
     return push_info_str
 
 def check_help(text):

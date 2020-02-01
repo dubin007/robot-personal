@@ -154,7 +154,7 @@ def text_reply(msg):
 def text_reply(msg):
     if msg['FromUserName'] == itchat.originInstance.storageClass.userName and msg['ToUserName'] != 'filehelper':
         return
-    if check_identify(msg.text):
+    if check_identify(msg.text) or len(msg.text) < 10:
         return
     # 判断是在否在关注的群列表里
     if not judge_whether_foucs_group(conn, itchat.originInstance.storageClass.nickName, msg['FromUserName']):
