@@ -23,10 +23,10 @@ def get_random_tail():
     return tail
 
 def get_random_split():
-    return random.random() * 6
+    return random.random() * 3
 
 def get_random_split_short():
-    return random.random() * 3
+    return random.random() * 1
 
 def get_random_long_time():
     return random.random() * 60 * 60
